@@ -1,19 +1,8 @@
 from flask import (
-    render_template,
-    redirect,
-    url_for,
-    abort,
-    flash,
-    request,
-    current_app,
-    jsonify,
-    session,
     send_from_directory,
 )
 from . import main
-from flask_login import current_user
 from app.utils.decorators import *
-from app.utils.misc import generate_layout
 from app.utils.authorizer import Authorizer
 
 
@@ -25,54 +14,15 @@ def test():
     return render_template("test.html")
 
 
-@main.route("/assessments/<string:id>/manage", methods=["GET"])
-@login_required
-def get_assessment_for_edit_mode(id):
-    result = Authorizer(current_user).can_user_manage_assessment(id)
-    return render_template("kanban.html", assessment=result["extra"]["assessment"])
-
-
-@main.route("/assessments/<string:id>", methods=["GET"])
-@login_required
-def view_assessment(id):
-    """
-    Endpoint is for vendors to load and respond to assessments
-    See view_assessment_overview for the endpoint for InfoSec
-    to review assessments
-    """
-    result = Authorizer(current_user).can_user_respond_to_assessment(id)
-    if not result["extra"]["assessment"].is_assessment_published():
-        flash("Assessment is not published", "warning")
-        return redirect(url_for("main.home"))
-    return render_template("kanban_view.html", assessment=result["extra"]["assessment"])
-
-
-@main.route("/assessments/<string:id>/review", methods=["GET"])
-@login_required
-def view_assessment_overview(id):
-    """
-    Endpoint is for InfoSec to review assessments
-    See view_assessment for the endpoint that vendors use
-    to respond to assessments
-    """
-    result = Authorizer(current_user).can_user_manage_assessment(id)
-    return render_template(
-        "assessment_overview.html", assessment=result["extra"]["assessment"]
-    )
-
-
-@main.route("/forms/<string:id>", methods=["GET"])
-@login_required
-def view_form(id):
-    result = Authorizer(current_user).can_user_read_form(id)
-    return render_template("view_form.html", form=result["extra"]["form"])
-
-
 @main.route("/", methods=["GET"])
 @login_required
 def home():
     return render_template("home.html")
 
+@main.route("/integrations", methods=["GET"])
+@login_required
+def integrations():
+    return render_template("integrations.html")
 
 @main.route("/projects/<string:pid>/reports/<path:filename>", methods=["GET"])
 @login_required
@@ -94,12 +44,6 @@ def frameworks():
 def risks(id):
     Authorizer(current_user).can_user_access_risk_module(id)
     return render_template("risk_register.html")
-
-
-@main.route("/assessments", methods=["GET"])
-@login_required
-def assessments():
-    return render_template("assessments.html")
 
 
 @main.route("/policies", methods=["GET"])

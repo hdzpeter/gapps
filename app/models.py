@@ -1385,7 +1385,7 @@ class Tenant(db.Model, QueryMixin, AuthorizerMixin):
 
         evidence = ProjectEvidence(
             name="Evidence N/A",
-            description="Evidence is not required. Used to satisfy evidence collection.",
+            description="Default evidence object. Used to satisfy evidence collection.",
         )
         project.evidence.append(evidence)
         db.session.commit()
@@ -2563,9 +2563,11 @@ class Project(db.Model, DateMixin):
         return policy
 
     def remove_policy(self, id):
-        if policy := self.policies.filter(ProjectPolicy.id == id).first():
-            db.session.delete(policy)
-            db.session.commit()
+        policy = self.policies.filter_by(id=id).first_or_404()
+        PolicyVersion.query.filter_by(policy_id=policy.id).delete()
+        ProjectPolicyAssociation.query.filter_by(policy_id=policy.id).delete()
+        db.session.delete(policy)
+        db.session.commit()
         return True
 
     def remove_control(self, id):
@@ -2661,6 +2663,13 @@ class ProjectPolicy(db.Model):
                 record.published = False
         db.session.commit()
         return has_version
+
+    def delete(self):
+        PolicyVersion.query.filter_by(policy_id=self.id).delete()
+        ProjectPolicyAssociation.query.filter_by(policy_id=self.id).delete()
+        db.session.delete(self)
+        db.session.commit()
+        return True
 
     def update(self, name=None, description=None, reviewer=None):
         if name:
@@ -2827,7 +2836,7 @@ class PolicyVersion(db.Model):
     status = db.Column(db.String(), default="draft")
     published = db.Column(db.Boolean(), default=False)
     policy_id = db.Column(
-        db.String, db.ForeignKey("project_policies.id"), nullable=False
+        db.String, db.ForeignKey("project_policies.id", ondelete="CASCADE"), nullable=False
     )
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
     date_updated = db.Column(db.DateTime, onupdate=datetime.utcnow)

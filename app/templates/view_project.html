@@ -67,7 +67,7 @@
 							</div>
 							<div class="flex flex-row gap-x-2">						
 								<div class="dropdown dropdown-end">
-								  <div tabindex="0" role="button" class="btn btn-sm opacity-80">Actions</div>
+								  <div tabindex="0" role="button" class="btn btn-sm btn-primary opacity-80">Actions</div>
 								  <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow gap-y-1">
 									<li>
 										<button @click="showControlDeletion" class="btn btn-xs text-error">Delete</button>
@@ -150,7 +150,7 @@
 									<span class="text-xs" x-text="expanded ? (selectedControl.description || selectedControl.name) : (selectedControl.description || selectedControl.name).slice(0, 90) + '...'"></span>
 
 									<button
-										x-show="(selectedControl.description || selectedControl.name).length > 100"
+										x-show="(selectedControl.description || selectedControl.name).length > 90"
 										@click="expanded = !expanded"
 										class="text-warning underline ml-2 text-xs">
 										<span x-text="expanded ? 'See less' : 'See more'"></span>
@@ -212,7 +212,7 @@
 							</div>
 							<div class="flex flex-row gap-x-2">
 								<div class="dropdown">
-								  <div tabindex="0" role="button" class="btn btn-sm opacity-80">Actions</div>
+								  <div tabindex="0" role="button" class="btn btn-sm btn-primary opacity-80">Actions</div>
 								  <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
 									<li>
 										<button x-show="selectedSubControl.is_applicable" @click="setSubControlAsNotApplicable(selectedSubControl)" class="btn btn-xs text-error">Mark as Not Applicable</button>
@@ -1419,8 +1419,8 @@
 								<div class="flex flex-row justify-between">
 									<div class="flex flex-col mb-2">
 										<span class=" font-semibold mb-2">Auditor Enabled</span>
-										<div x-show="projectData.auditor_enabled" class="badge badge-sm rounded-lg badge-success">True</div>
-										<div x-show="!projectData.auditor_enabled" class="badge badge-sm rounded-lg badge-error">False</div>
+										<div x-show="projectData.auditor_enabled" class="badge badge-sm rounded-lg green-badge">True</div>
+										<div x-show="!projectData.auditor_enabled" class="badge badge-sm rounded-lg red-badge">False</div>
 									</div>
 									<button @click="switchTab({'tab': 'settings'})" class="btn btn-sm btn-ghost"><i class="ti ti-arrow-right my-auto"></i></button>
 								</div>
@@ -1821,10 +1821,10 @@
 									</div>
 								  </td>
 								  <td class="capitalize font-semibold text-center">
-									  <span x-show="item.status === 'not applicable'" class="px-2 py-2 rounded-lg text-[9px] uppercase text-error bg-base-100" x-text="item.status"></span>
+									  <span x-show="item.status === 'not applicable'" class="px-2 py-2 rounded-lg text-[9px] uppercase bg-error bg-base-100" x-text="item.status"></span>
 									  <span x-show="item.status === 'not started'" class="px-2 py-2 rounded-lg text-[9px] uppercase bg-base-100" x-text="item.status"></span>
-									  <span x-show="item.status === 'in progress'" class="px-2 py-2 rounded-lg text-[9px] uppercase text-warning bg-base-100" x-text="item.status"></span>
-									  <span x-show="item.status === 'complete'" class="px-2 py-2 rounded-lg text-[9px] uppercase text-success bg-base-100" x-text="item.status"></span>
+									  <span x-show="item.status === 'in progress'" class="px-2 py-2 rounded-lg text-[9px] uppercase bg-warning bg-base-100" x-text="item.status"></span>
+									  <span x-show="item.status === 'complete'" class="px-2 py-2 rounded-lg text-[9px] uppercase bg-success bg-base-100" x-text="item.status"></span>
 
 								  </td>
 								  <td class="capitalize font-semibold text-center">
@@ -1934,7 +1934,8 @@
 									<th class="bg-base-200 p-2 text-xs border-b border-base-100">Policy Title</th>
 									<th class="bg-base-200 p-2 text-xs border-b border-base-100 w-2/12">Published</th>
 									<th class="bg-base-200 p-2 text-xs border-b border-base-100 w-2/12">Reviewer</th>
-									<th class="bg-base-200 p-2 rounded-tr-md text-xs border-b border-base-100 w-1">Versions</th>
+									<th class="bg-base-200 p-2 text-xs border-b border-base-100 w-1">Versions</th>
+									<th class="bg-base-200 p-2 rounded-tr-md text-xs border-b border-base-100 w-1">Remove</th>
 								  </tr>
 								</thead>
 								<!-- Table Body -->
@@ -1952,6 +1953,9 @@
 										<td x-text="item.reviewer ||  'No reviewer'"></td>
 										<td>
 											<span class="p-2 rounded-lg text-[10px] uppercase bg-base-100" x-text="item.versions.length"></span>
+										</td>
+										<td>
+											<button @click="selectedPolicy=item; showRemovePolicyModal=true" class="btn btn-xs btn-ghost text-error"><i class="ti ti-trash"></i></button>
 										</td>
 									</tr>
 								  </template>
@@ -2681,6 +2685,50 @@
 				</div>
 			</div>
 
+			<div class="col-span-6" x-show="selectedTab === 'integrations' && !tabLoading">
+				<div class="alert bg-base-200 mb-4">
+					<div class="alert-content">
+						<i class="ti ti-info-circle text-lg"></i>
+						<span>Add integrations to your project to automatically highlight compliance violations.</span>
+					</div>
+				</div>
+				<div class="card border border-base-200 bg-base-200">
+					<div class="card-body">
+						<div class="flex justify-between align-items-center">
+							<h2 class="card-title mb-4">Project Integrations</h2>
+						</div>
+						<div x-show="!projectTags.length" class="grid grid-cols-4 text-center">
+						  <div class="col-span-full hero-content text-center">
+							<div class="max-w-md">
+							  <h1 class="text-2xl font-bold">No integrations</h1>
+							  <p class="py-6">
+								You have not added any integrations to your project.
+							  </p>
+							  <button @click="showCreateTagModal=true" class="btn btn-sm btn-primary">Add Integration</button>
+							</div>
+						  </div>
+						</div>
+
+						<div x-show="projectTags.length" class="overflow-x-auto">
+						  <table class="table">
+							<thead>
+							  <tr>
+								<th>Tag Name</th>
+							  </tr>
+							</thead>
+							<tbody>
+							  <template x-for="tag in projectTags">
+								  <tr>
+									<td x-text="tag.name"></td>
+								  </tr>
+							  </template>
+							</tbody>
+						  </table>
+						</div>
+					</div>
+				</div>
+			</div>
+
 	</div>
 	<div>
 		<div class="modal" x-bind:class="{ 'modal-open': showMetadataModal }">
@@ -3186,6 +3234,27 @@
 				</div>
 			</div>
 		</div>
+	</div>
+	<div>
+	  <div class="modal" x-bind:class="{ 'modal-open': showRemovePolicyModal }">
+		  <div class="modal-box">
+			  <form method="dialog">
+				  <button @click="showRemovePolicyModal = false"
+						  class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕
+				  </button>
+			  </form>
+			  <span class="text-lg font-semibold">Remove Policy from Project</span>
+			  <div class="grid grid-cols-6 gap-4 mt-4">
+				  <div class="col-span-6">
+					  <span class="block text-sm font-medium mb-2" x-text="'Are you sure you want to remove the policy \'' + selectedPolicy.name + '\' from the project? The policy and all versions will be deleted. This action is not reversible.'"></span>
+				  </div>
+			  </div>
+			  <div class="modal-action">
+				  <button class="btn" @click="showRemovePolicyModal = false">Cancel</button>
+				  <button class="btn btn-error" @click="removePolicy">Remove</button>
+			  </div>
+		  </div>
+	  </div>
 	</div>
 	<div>
 		<div data-theme="dim" class="modal" x-bind:class="{ 'modal-open': addFeedbackModal }">
@@ -3824,6 +3893,7 @@ function project(){
 		},
 		openTodoId: null,
 		rowsSelected: [],
+		showRemovePolicyModal: false,
 		showCreateCustomControlModal: false,
 		customControlName: "",
 		customControlDescription: "",
@@ -3876,7 +3946,7 @@ function project(){
 		riskMessages: [],
 		messagesForControl: [],
 		tenantPolicies: [],
-		tabs: ["summary", "controls", "policies", "evidence", "comments", "risk register", "settings", "user management", "control tags", "report"],
+		tabs: ["summary", "controls", "policies", "evidence", "comments", "risk register", "settings", "user management", "integrations", "control tags", "report"],
 		loadingSkeleton: '<span class="loading loading-dots loading-lg"></span>',
 		tabLoading: true,
 		tableLoading: true,
@@ -4025,6 +4095,24 @@ function project(){
 		  {"field": "risk", "headerName": "Risk", "filter": "agTextColumnFilter", "cellRenderer": riskToVertBar},
 		  {"field": "priority", "headerName": "Priority", "filter": "agTextColumnFilter", "cellRenderer": priorityToVertBar},
 		],
+		removePolicy: function() {
+			if (!this.selectedPolicy) {
+				toast("No policy selected", "warning");
+				return;
+			}
+			request("DELETE",
+				`/api/v1/projects/${this.projectId}/policies/${this.selectedPolicy.id}`,
+				data => {
+					toast("Removed policy from project");
+					this.policies = this.policies.filter(p => p.id !== this.selectedPolicy.id);
+					this.showRemovePolicyModal = false;
+					this.selectedPolicy = {};
+				},
+				error => {
+					toast(error.message, "error");
+				}
+			);
+		},
 		// add new functions here
 		showControlDeletion() {
 <!--		haaaa-->

@@ -17,107 +17,6 @@ from app.utils.reports import Report
 from app.utils.authorizer import Authorizer
 import arrow
 
-
-@api.route("/assessments/<string:qid>", methods=["GET"])
-@login_required
-def get_assessment(qid):
-    result = Authorizer(current_user).can_user_read_assessment(qid)
-    data = result["extra"]["assessment"].as_dict()
-    available_guests = request.args.get("available-guests")
-    if available_guests:
-        data["guests"] = result["extra"]["assessment"].get_available_guests()
-    return jsonify(data)
-
-
-@api.route("/assessments/<string:qid>/guests")
-@login_required
-def get_guests_for_assessment(qid):
-    result = Authorizer(current_user).can_user_read_assessment(qid)
-    return jsonify(result["extra"]["assessment"].get_available_guests())
-
-
-@api.route("/assessments/<string:qid>/publish", methods=["PUT"])
-@login_required
-def publish_assessment(qid):
-    result = Authorizer(current_user).can_user_manage_assessment(qid)
-    data = request.get_json()
-    result["extra"]["assessment"].published = data.get("enabled")
-    return jsonify({"message": "ok"})
-
-
-@api.route("/assessments/<string:qid>/guests", methods=["PUT"])
-@login_required
-def update_assessment_guests(qid):
-    result = Authorizer(current_user).can_user_manage_assessment(qid)
-    data = request.get_json()
-    result["extra"]["assessment"].set_guests(
-        data.get("guests"), send_notification=False
-    )
-    return jsonify(result["extra"]["assessment"].as_dict())
-
-
-@api.route("/assessments/<string:qid>/form", methods=["PUT"])
-@login_required
-def update_assessment_form(qid):
-    result = Authorizer(current_user).can_user_manage_assessment(qid)
-    data = request.get_json()
-    result["extra"]["assessment"].form = data.get("form", {})
-    db.session.commit()
-    return jsonify(result["extra"]["assessment"].as_dict())
-
-
-@api.route("/assessments/<string:qid>/submission", methods=["PUT"])
-@login_required
-def update_assessment_submission(qid):
-    result = Authorizer(current_user).can_user_respond_to_assessment(qid)
-    assessment = result["extra"]["assessment"]
-    data = request.get_json()
-    if submit := request.args.get("submit", False):
-        assessment.submitted = True
-    assessment.submission = data.get("form", {})
-    db.session.commit()
-    return jsonify(assessment.as_dict())
-
-
-@api.route("/tenants/<string:tid>/assessments", methods=["GET"])
-@login_required
-def get_assessments(tid):
-    result = Authorizer(current_user).can_user_access_tenant(tid)
-    data = []
-    for assessment in result["extra"]["tenant"].get_assessments_for_user(current_user):
-        data.append(assessment.as_dict())
-    return jsonify(data)
-
-
-@api.route("/tenants/<string:tid>/forms", methods=["GET"])
-@login_required
-def get_forms(tid):
-    result = Authorizer(current_user).can_user_access_tenant(tid)
-    data = []
-
-    for form in result["extra"]["tenant"].get_form_templates():
-        data.append(form.as_dict())
-    return jsonify(data)
-
-
-@api.route("/forms/<string:id>", methods=["GET"])
-@login_required
-def get_form(id):
-    result = Authorizer(current_user).can_user_read_form(id)
-    return jsonify(result["extra"]["form"].as_dict())
-
-
-@api.route("/tenants/<string:tid>/forms", methods=["POST"])
-@login_required
-def create_form(tid):
-    result = Authorizer(current_user).can_user_manage_tenant(tid)
-    data = request.get_json()
-    form = result["extra"]["tenant"].create_form(
-        name=data.get("name"), description=data.get("description")
-    )
-    return jsonify(form.as_dict())
-
-
 @api.route("/tenants/<string:id>/frameworks", methods=["GET"])
 @login_required
 def get_frameworks(id):
@@ -753,7 +652,7 @@ def update_policy_for_project(pid, ppid):
 @api.route("/projects/<string:pid>/policies/<string:ppid>", methods=["DELETE"])
 @login_required
 def delete_policy_for_project(pid, ppid):
-    result = Authorizer(current_user).can_user_delete_policy_from_project(pid, ppid)
+    result = Authorizer(current_user).can_user_delete_policy_from_project(ppid, pid)
     result["extra"]["policy"].project.remove_policy(ppid)
     return jsonify({"message": "ok"})
 
@@ -1235,30 +1134,6 @@ def delete_evidence_for_subcontrol(pid, sid, eid):
     )
     result["extra"]["subcontrol"].evidence.remove(result["extra"]["evidence"])
     db.session.commit()
-    return jsonify({"message": "ok"})
-
-
-# TODO - complete
-@api.route("/tenants/<string:tid>/vendor-files", methods=["GET"])
-@login_required
-def get_files_for_assessments(tid):
-    result = Authorizer(current_user).can_user_access_tenant(tid)
-    data = []
-
-    # Get all assessments the user has access to
-    # Get all files uploaded to those assessments
-    # Return the files
-
-    for form in result["extra"]["tenant"].get_form_templates():
-        data.append(form.as_dict())
-    return jsonify(data)
-
-
-@api.route("/assessments/<string:id>/nudge", methods=["PUT"])
-@login_required
-def send_assessment_reminder_to_vendor(id):
-    result = Authorizer(current_user).can_user_manage_assessment(id)
-    result["extra"]["assessment"].send_reminder_email_to_vendor()
     return jsonify({"message": "ok"})
 
 
