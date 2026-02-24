@@ -63,7 +63,7 @@
 						<div class="flex justify-between w-full pl-8 border-l">
 							<div class="flex flex-col">
 								<span class="subtitle text-xs !mb-0" x-text="'Control Title - '+selectedControl.ref_code"></span>
-								<span class="text-lg" x-text="selectedControl.name"></span>
+								<span class="text-lg mr-4" x-text="selectedControl.name"></span>
 							</div>
 							<div class="flex flex-row gap-x-2">						
 								<div class="dropdown dropdown-end">
@@ -393,7 +393,7 @@
 									</div>
 									<div x-show="!projectData.auditors.length" class="flex flex-row gap-x-2">
 										<span class="my-auto" x-show="!projectData.auditors.length">No Auditor</span>
-										<button @click="closeControlDrawer;switchTab({'tab': 'user management'})" class="btn btn-xs text-warning bg-base-100">Update<i class="ti ti-arrow-right"></i></button>
+										<button @click="closeControlDrawer;switchTab({'tab': 'users'})" class="btn btn-xs text-warning bg-base-100">Update<i class="ti ti-arrow-right"></i></button>
 									</div>
 
 								</div>
@@ -581,7 +581,7 @@
 									<div x-show="!projectData.auditors.length" class="max-w-full">
 									  <h1 class="text-xl font-semibold">No Auditors</h1>
 									  <p class="py-2 px-10">You have not added an Auditor to this project. Please add one if you would like to utilize Auditor Reviews.</p>
-									  <button @click="closeControlDrawer;switchTab({tab: 'user management'})" class="btn btn-sm btn-primary">Add Auditor</button>
+									  <button @click="closeControlDrawer;switchTab({tab: 'users'})" class="btn btn-sm btn-primary">Add Auditor</button>
 									</div>
 								  </div>
 								</div>
@@ -1467,7 +1467,7 @@
 											<i x-show="projectData.members.length > 1" class="ti ti-check text-success"></i>
 											<i x-show="projectData.members.length <= 1" class="ti ti-x text-error"></i>
 										</button></td>
-										<td><button class="btn btn-sm btn-ghost" @click="switchTab({'tab': 'user management'})"><i class="ti ti-arrow-right text-lg"></i></button></td>
+										<td><button class="btn btn-sm btn-ghost" @click="switchTab({'tab': 'users'})"><i class="ti ti-arrow-right text-lg"></i></button></td>
 									</tr>
 									<tr>
 										<td class="capitalize font-bold"><i class="ti ti-number-2"></i></td>
@@ -1497,7 +1497,7 @@
 											<i x-show="!projectData.auditor_enabled || projectData.auditors.length" class="ti ti-check text-success"></i>
 											<i x-show="projectData.auditor_enabled && !projectData.auditors.length" class="ti ti-x text-error"></i>
 										</button></td>
-										<td><button class="btn btn-sm btn-ghost" @click="switchTab({'tab': 'user management'})"><i class="ti ti-arrow-right text-lg"></i></button></td>
+										<td><button class="btn btn-sm btn-ghost" @click="switchTab({'tab': 'users'})"><i class="ti ti-arrow-right text-lg"></i></button></td>
 									</tr>
 									<tr>
 										<td class="capitalize font-bold"><i class="ti ti-number-5"></i></td>
@@ -1617,6 +1617,31 @@
 									  <li>
 										<label :class="{'border-error':controlFilter.name}" class="input input-xs flex items-center gap-2">
 										  <input x-model="controlFilter.name" type="text" class="grow" placeholder="Search..." />
+										  <svg
+											xmlns="http://www.w3.org/2000/svg"
+											viewBox="0 0 16 16"
+											fill="currentColor"
+											class="h-4 w-4 opacity-70">
+											<path
+											  fill-rule="evenodd"
+											  d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"
+											  clip-rule="evenodd" />
+										  </svg>
+										</label>
+									  </li>
+									</ul>
+								  </li>
+								</ul>
+								<ul class="menu bg-base-200 rounded-box py-0 mt-0">
+								  <li>
+									<div class="menu-title text-xs flex justify-between">
+										<h2>Ref Code</h2>
+										<i x-show="controlFilter.ref_code" @click="delete controlFilter.ref_code" class="ti ti-x text-error hover:cursor-pointer hover:opacity-75"></i>
+									</div>
+									<ul class="font-semibold text-xs pr-2">
+									  <li>
+										<label :class="{'border-error':controlFilter.ref_code}" class="input input-xs flex items-center gap-2">
+										  <input x-model="controlFilter.ref_code" type="text" class="grow" placeholder="e.g. CC6.1" />
 										  <svg
 											xmlns="http://www.w3.org/2000/svg"
 											viewBox="0 0 16 16"
@@ -1756,6 +1781,11 @@
 								</th>
 								<th class="bg-base-200 p-6 text-xs border-b border-base-300">
 									<div class="flex justify-between">
+										<span class="my-auto text-base-content">Ref Code</span>
+									</div>
+								</th>
+								<th class="bg-base-200 p-6 text-xs border-b border-base-300">
+									<div class="flex justify-between">
 										<span class="my-auto text-base-content" x-text="'Control Title ('+filteredControls.length+')'"></span>
 									</div>
 								</th>
@@ -1815,9 +1845,10 @@
 										</div>
 									</div>
 								  </td>
+								  <td class="font-mono text-xs font-semibold" x-text="item.ref_code"></td>
 								  <td colspan="1">
 									<div class="flex rounded-t-lg">
-									  <div @click="openControlInDrawer(item)" class="flex-1 text-xs p-4 font-semibold my-auto hover:underline hover:cursor-pointer" x-text="item.ref_code+' - '+item.name"></div>
+									  <div @click="openControlInDrawer(item)" class="flex-1 text-xs p-4 font-semibold my-auto hover:underline hover:cursor-pointer" x-text="item.name"></div>
 									</div>
 								  </td>
 								  <td class="capitalize font-semibold text-center">
@@ -2081,9 +2112,10 @@
 									  <tr>
 										<th class="bg-base-200 p-2 text-xs border-b border-base-100 w-2">View</th>
 										<th class="bg-base-200 p-2 text-xs border-b border-base-100">Evidence Title</th>
-										<th class="bg-base-200 p-2 text-xs border-b border-base-100 w-2/12 text-center">Files</th>
-										<th class="bg-base-200 rounded-tr-md p-2 text-xs border-b border-base-100 w-1 text-center">Subcontrols</th>
-
+										<th class="bg-base-200 p-2 text-xs border-b border-base-100">Description</th>
+										<th class="bg-base-200 p-2 text-xs border-b border-base-100 w-2/12 text-center">File Attached</th>
+										<th class="bg-base-200 p-2 text-xs border-b border-base-100 w-1/12 text-center">Subcontrols</th>
+										<th class="bg-base-200 rounded-tr-md p-2 text-xs border-b border-base-100 w-1 text-center">Delete</th>
 									  </tr>
 									</thead>
 
@@ -2094,13 +2126,17 @@
 											<td>
 												<button @click="openEvidenceDrawer(item)" class="btn btn-xs btn-ghost"><i class="ti ti-maximize text-lg"></i></button>
 											</td>
-											<td x-text="item.name"></td>
+											<td @click="openEvidenceDrawer(item)" class="hover:underline hover:cursor-pointer" x-text="item.name"></td>
+											<td x-text="item.description"></td>
 											<td class="text-center">
 												<span x-show="!item.has_file" class="p-2 rounded-lg text-[10px] uppercase bg-base-100 text-warning">False</span>
 												<span x-show="item.has_file" class="p-2 rounded-lg text-[10px] uppercase bg-base-100 text-success">True</span>
 											</td>
 											<td>
 												<div @click="openEvidenceDrawer(item)" class="flex flex-row gap-x-1 font-semibold justify-center bg-base-100 p-1 rounded-md hover:cursor-pointer" x-text="item.control_count"></div>
+											</td>
+											<td>
+												<button @click="selectedEvidence=item;showDeleteEvidenceModal=true" class="btn btn-sm"><i class="ti ti-trash text-error"></i></button>
 											</td>
 										</tr>
 
@@ -2114,7 +2150,7 @@
 			</div>
 
 			<div class="col-span-6" x-show="selectedTab === 'settings' && !tabLoading">
-				<div class="card border border-base-200 bg-base-200">
+				<div class="card border border-base-200 bg-base-200 mb-4">
 					<div class="card-body">
 						<div class="flex justify-between align-items-center">
 							<h2 class="card-title mb-4">Project Settings</h2>
@@ -2152,11 +2188,54 @@
 								<input :disabled="isAuditor" x-model="projectData.policies_require_cc" :checked="projectData.policies_require_cc" type="checkbox" class="toggle toggle-sm toggle-success"/>
 							</div>
 						</div>
-
+<!--haaaa-->
 					</div>
 				</div>
+				<div class="card border border-base-200 bg-base-200">
+					<div class="card-body">
+						<div class="flex justify-between align-items-center">
+							<h2 class="card-title mb-4">Project Tags</h2>
+							<div class="flex flex-row gap-x-2">
+								<div class="space-x-2 flex">
+									<button :disabled="isAuditor" class="btn btn-xs text-xs bg-base-100 tooltip text-success"
+											@click="showCreateTagModal=true" data-tip="Add Tag">Add Tag
+									</button>
+								</div>
+							</div>
+						</div>
+						<div x-show="!projectTags.length" class="grid grid-cols-4 text-center">
+						  <div class="col-span-full hero-content text-center">
+							<div class="max-w-md">
+							  <h1 class="text-2xl font-bold">No tags</h1>
+							  <p class="py-6">
+								You have not added any tags to your project.
+							  </p>
+							  <button @click="showCreateTagModal=true" class="btn btn-sm btn-primary">Add Tag</button>
+							</div>
+						  </div>
+						</div>
+
+						<div x-show="projectTags.length" class="overflow-x-auto">
+						  <table class="table">
+							<thead>
+							  <tr>
+								<th>Tag Name</th>
+							  </tr>
+							</thead>
+							<tbody>
+							  <template x-for="tag in projectTags">
+								  <tr>
+									<td x-text="tag.name"></td>
+								  </tr>
+							  </template>
+							</tbody>
+						  </table>
+						</div>
+					</div>
+
+				</div>
 			</div>
-			<div class="col-span-6" x-show="selectedTab === 'user management' && !tabLoading">
+			<div class="col-span-6" x-show="selectedTab === 'users' && !tabLoading">
 				<div class="card border border-base-200 bg-base-200">
 					<div class="card-body">
 						<div class="flex justify-between align-items-center">
@@ -2204,57 +2283,6 @@
 					</div>
 				</div>
 			</div>
-			<div class="col-span-6" x-show="selectedTab === 'control tags' && !tabLoading">
-				<div class="alert bg-base-200 mb-4">
-					<div class="alert-content">
-						<i class="ti ti-info-circle text-lg"></i>
-						<span>Tags are used to categorize controls. You can add a tag to a control by selecting the tag from the dropdown in the control editor.</span>
-					</div>
-				</div>
-				<div class="card border border-base-200 bg-base-200">
-					<div class="card-body">
-						<div class="flex justify-between align-items-center">
-							<h2 class="card-title mb-4">Project Tags</h2>
-							<div class="flex flex-row gap-x-2">
-								<div class="space-x-2 flex">
-									<button :disabled="isAuditor" class="btn btn-xs text-xs bg-base-100 tooltip text-success"
-											@click="showCreateTagModal=true" data-tip="Add Tag">Add Tag
-									</button>
-								</div>
-							</div>
-						</div>
-						<div x-show="!projectTags.length" class="grid grid-cols-4 text-center">
-						  <div class="col-span-full hero-content text-center">
-							<div class="max-w-md">
-							  <h1 class="text-2xl font-bold">No tags</h1>
-							  <p class="py-6">
-								You have not added any tags to your project.
-							  </p>
-							  <button @click="showCreateTagModal=true" class="btn btn-sm btn-primary">Add Tag</button>
-							</div>
-						  </div>
-						</div>
-
-						<div x-show="projectTags.length" class="overflow-x-auto">
-						  <table class="table">
-							<thead>
-							  <tr>
-								<th>Tag Name</th>
-							  </tr>
-							</thead>
-							<tbody>
-							  <template x-for="tag in projectTags">
-								  <tr>
-									<td x-text="tag.name"></td>
-								  </tr>
-							  </template>
-							</tbody>
-						  </table>
-						</div>
-					</div>
-				</div>
-			</div>			
-
 			<div class="col-span-6 text-center" x-show="selectedTab === 'report' && !tabLoading">
 				<div class="grid grid-cols-10 gap-x-2">
 					<div class="col-span-2">
@@ -2600,7 +2628,7 @@
 							<i class="ti ti-alert-triangle text-warning text-md"></i>
 							<span class="text-xs">Please add a Auditor to your project! The Auditor will have access to change the review status.</span>
 							<div>
-								<button class="btn btn-sm" @click="switchTab({'tab': 'user management'})">Add Auditor</button>
+								<button class="btn btn-sm" @click="switchTab({'tab': 'users'})">Add Auditor</button>
 							</div>
 						</div>
 					</div>
@@ -2611,7 +2639,7 @@
 								<div class="card-title text-lg">Auditor Details</div>
 								<div role="alert" class="alert bg-base-300">
 									<i class="ti ti-alert-triangle text-md"></i>
-									<span class="text-xs">If you would like to add/edit the Auditors in the project, see the "User Management" tab.</span>
+									<span class="text-xs">If you would like to add/edit the Auditors in the project, see the "Users" tab.</span>
 								</div>
 								<div class="flex flex-col text-left mt-2">
 									<span class="font-bold">Auditors:</span>
@@ -2686,49 +2714,146 @@
 			</div>
 
 			<div class="col-span-6" x-show="selectedTab === 'integrations' && !tabLoading">
-				<div class="alert bg-base-200 mb-4">
-					<div class="alert-content">
-						<i class="ti ti-info-circle text-lg"></i>
-						<span>Add integrations to your project to automatically highlight compliance violations.</span>
-					</div>
-				</div>
-				<div class="card border border-base-200 bg-base-200">
-					<div class="card-body">
-						<div class="flex justify-between align-items-center">
-							<h2 class="card-title mb-4">Project Integrations</h2>
-						</div>
-						<div x-show="!projectTags.length" class="grid grid-cols-4 text-center">
-						  <div class="col-span-full hero-content text-center">
-							<div class="max-w-md">
-							  <h1 class="text-2xl font-bold">No integrations</h1>
-							  <p class="py-6">
-								You have not added any integrations to your project.
-							  </p>
-							  <button @click="showCreateTagModal=true" class="btn btn-sm btn-primary">Add Integration</button>
-							</div>
-						  </div>
-						</div>
+    <div class="alert bg-base-200 mb-4">
+        <div class="alert-content">
+            <i class="ti ti-info-circle text-lg"></i>
+            <span>Add integrations to your project to automatically highlight compliance violations.</span>
+        </div>
+    </div>
 
-						<div x-show="projectTags.length" class="overflow-x-auto">
-						  <table class="table">
-							<thead>
-							  <tr>
-								<th>Tag Name</th>
-							  </tr>
-							</thead>
-							<tbody>
-							  <template x-for="tag in projectTags">
-								  <tr>
-									<td x-text="tag.name"></td>
-								  </tr>
-							  </template>
-							</tbody>
-						  </table>
-						</div>
-					</div>
-				</div>
-			</div>
+    <div class="card border border-base-200 bg-base-200">
+        <div class="card-body">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="card-title">Project Integrations</h2>
+                <div class="flex gap-2" x-show="projectDeployments.length">
+                    <button @click="openAddIntegrationModal(project.id)" class="btn btn-sm btn-primary">
+                        <i class="ti ti-plus mr-1"></i> Add
+                    </button>
+                    <button @click="openRemoveIntegrationModal()" class="btn btn-sm btn-error btn-outline">
+                        <i class="ti ti-trash mr-1"></i> Remove
+                    </button>
+                </div>
+            </div>
 
+            <!-- Empty state -->
+            <div x-show="!projectDeployments.length" class="grid grid-cols-4 text-center">
+                <div class="col-span-full hero-content text-center">
+                    <div class="max-w-md">
+                        <h1 class="text-2xl font-bold">No integrations</h1>
+                        <p class="py-6">You have not added any integrations to your project.</p>
+                        <button @click="openAddIntegrationModal(project.id)" class="btn btn-sm btn-primary">Add Integration</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading violations -->
+            <div x-show="projectDeployments.length && integrationsLoading" class="flex justify-center py-10">
+                <span class="loading loading-spinner loading-md"></span>
+            </div>
+
+            <!-- Violations table -->
+            <div x-show="projectDeployments.length && !integrationsLoading">
+
+                <!-- No violations found -->
+                <div x-show="!projectViolations.length" class="text-center py-8 text-base-content/50">
+                    <i class="ti ti-circle-check text-4xl text-success block mb-2"></i>
+                    No violations detected across your integrations.
+                </div>
+
+                <div x-show="projectViolations.length" class="overflow-x-auto">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Check</th>
+                                <th>Integration</th>
+                                <th>Controls</th>
+                                <th>Last Run</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template x-for="violation in projectViolations" :key="violation.deployment_id + '-' + violation.name">
+                                <tr class="hover:cursor-pointer" @click="openViolationDrawer(violation)">
+                                    <td>
+                                        <span class="hover:underline font-semibold text-sm" x-text="violation.name"></span>
+                                    </td>
+                                    <td>
+                                        <span class="blue-badge" x-text="violation.integration_name"></span>
+                                    </td>
+                                    <td>
+                                        <div class="flex flex-wrap gap-1">
+                                            <template x-for="control in violation.controls" :key="control.control_id">
+                                                <span class="gray-badge" x-text="control.framework + ' ' + control.control_id"></span>
+                                            </template>
+                                            <span x-show="!violation.controls || violation.controls.length === 0" class="text-base-content/40 text-xs">No controls</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-xs text-base-content/50" x-text="violation.end_time || '-'"></td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===================== REMOVE INTEGRATION MODAL ===================== -->
+<dialog id="remove-integration-modal" class="modal">
+    <div class="modal-box max-w-2xl">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h3 class="font-bold text-lg">Remove Integrations</h3>
+                <p class="text-sm text-base-content/60 mt-0.5">Select deployments to remove from this project</p>
+            </div>
+            <button class="btn btn-sm btn-circle btn-ghost" @click="closeRemoveIntegrationModal()">✕</button>
+        </div>
+
+        <div class="border rounded-md overflow-hidden max-h-96 overflow-y-auto">
+            <table class="table table-sm">
+                <thead class="sticky top-0 bg-base-200 z-10">
+                    <tr>
+                        <th class="w-10"></th>
+                        <th>Integration</th>
+                        <th>Deployment ID</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-for="deployment in projectDeployments" :key="deployment.id">
+                        <tr class="hover cursor-pointer"
+                            :class="deploymentsToRemove.has(deployment.id) ? 'bg-error/5' : ''"
+                            @click="toggleRemoveSelection(deployment.id)">
+                            <td>
+                                <input type="checkbox" class="checkbox checkbox-sm checkbox-error"
+                                    :checked="deploymentsToRemove.has(deployment.id)"
+                                    @change="toggleRemoveSelection(deployment.id)">
+                            </td>
+                            <td><span class="blue-badge" x-text="deployment.integration_name"></span></td>
+                            <td class="font-mono text-xs" x-text="deployment.id"></td>
+                            <td><span :class="deployment.enabled ? 'green-badge' : 'red-badge'" x-text="deployment.enabled ? 'Enabled' : 'Disabled'"></span></td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+
+        <div x-show="removeIntegrationError" class="alert alert-error text-sm mt-4">
+            <span x-text="removeIntegrationError"></span>
+        </div>
+
+        <div class="modal-action">
+            <button class="btn btn-ghost" @click="closeRemoveIntegrationModal()" :disabled="removingIntegrations">Cancel</button>
+            <button class="btn btn-error"
+                :disabled="deploymentsToRemove.size === 0 || removingIntegrations"
+                @click="confirmRemoveIntegrations()">
+                <span x-show="!removingIntegrations">Remove <span x-text="deploymentsToRemove.size"></span></span>
+                <span x-show="removingIntegrations" class="loading loading-spinner loading-sm"></span>
+            </button>
+        </div>
+    </div>
+    <div class="modal-backdrop" @click="closeRemoveIntegrationModal()"></div>
+</dialog>
 	</div>
 	<div>
 		<div class="modal" x-bind:class="{ 'modal-open': showMetadataModal }">
@@ -2935,6 +3060,28 @@
 		  </div>
 	  </div>
 	</div>
+	<div>
+	  <div class="modal" x-bind:class="{ 'modal-open': showDeleteEvidenceModal }">
+		  <div class="modal-box">
+			  <form method="dialog">
+				  <button @click="showDeleteEvidenceModal = false"
+						  class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕
+				  </button>
+			  </form>
+			  <span class="text-lg font-semibold">Delete Evidence?</span>
+			  <div class="grid grid-cols-6 gap-4 mt-4">
+				  <div class="col-span-6">
+					  <span class="block text-sm font-medium mb-2">Are you sure you want to delete the evidence? Any controls that leverage the evidence will be impacted.</span>
+				  </div>
+			  </div>
+			  <div class="modal-action">
+				  <button class="btn" @click="showDeleteEvidenceModal = false">Close</button>
+				  <button class="btn btn-error" @click="deleteEvidence(selectedEvidence)">Delete</button>
+			  </div>
+		  </div>
+	  </div>
+	</div>
+
 	<div>
 		<div data-theme="dim" class="modal" x-bind:class="{ 'modal-open': showCreateRisk }">
 			<div class="modal-box w-11/12 max-w-2xl">
@@ -3494,7 +3641,7 @@
 				</form>
 				<h2 class="py-2 text-xl font-semibold px-6">Create Evidence</h2>
 				<div class="grid grid-cols-6 px-6 mt-4 gap-y-4 gap-x-2">
-					<div class="col-span-6">
+					<div class="col-span-3">
 					  <label class="block text-sm font-medium mb-2">Evidence Name</label>
 					  <input type="text"
 						   class="input input-sm input-bordered w-full"
@@ -3503,11 +3650,14 @@
 					</div>
 					<div class="col-span-3">
 					  <label class="block text-sm font-medium mb-2">Description</label>
-					  <textarea class="textarea textarea-bordered w-full" x-model="createEvidencePayload.description" placeholder="Add description"></textarea>
+					  <input type="text"
+						   class="input input-sm input-bordered w-full"
+						   x-model="createEvidencePayload.description"
+						   placeholder="Provide description for the evidence..."/>
 					</div>
-					<div class="col-span-3">
+					<div class="col-span-6">
 					  <label class="block text-sm font-medium mb-2">Content</label>
-					  <textarea class="textarea textarea-bordered w-full" x-model="createEvidencePayload.content" placeholder="Add content"></textarea>
+					  <textarea class="textarea textarea-bordered w-full" x-model="createEvidencePayload.content" placeholder="Add text based content for the evidence"></textarea>
 					</div>
 					<div class="col-span-6">
 					  <label class="block text-sm font-medium mb-2">Evidence File</label>
@@ -3677,7 +3827,7 @@
 	<div x-show="showSetTagsModal" class="modal modal-open">
 		<div class="modal-box">
 			<h3 class="font-bold text-lg mb-4" x-text="'Update Tags for '+rowsSelected.length+' controls'"></h3>
-			<p class="text-sm font-semibold my-2">Select tags below to associate them with your controls. If you prefer to create new tags <span class="underline hover:cursor-pointer" @click="showSetTagsModal=false;switchTab({tab: 'control tags'})">click here.</span></p>
+			<p class="text-sm font-semibold my-2">Select tags below to associate them with your controls. If you prefer to create new tags <span class="underline hover:cursor-pointer" @click="showSetTagsModal=false;switchTab({tab: 'settings'})">click here.</span></p>
 			<div class="form-control">
 				<label class="label">
 					<span class="label-text">Select Tags</span>
@@ -3761,8 +3911,118 @@
 			</div>
 		</div>
 	</div>
+	<!-- ===================== ADD INTEGRATION MODAL ===================== -->
+	<dialog id="add-integration-modal" class="modal">
+		<div class="modal-box w-11/12 max-w-6xl">
+
+			<!-- Header -->
+			<div class="flex items-center justify-between mb-4">
+				<div>
+					<h3 class="font-bold text-lg">Add Integrations</h3>
+					<p class="text-sm text-base-content/60 mt-0.5">Select deployments to add to this project</p>
+				</div>
+				<button class="btn btn-sm btn-circle btn-ghost" @click="closeAddIntegrationModal()">✕</button>
+			</div>
+
+			<!-- Search + filter -->
+			<div class="flex items-center gap-3 mb-3">
+				<input
+					type="text"
+					placeholder="Search deployments..."
+					class="input input-bordered input-sm flex-1"
+					x-model="addIntegrationSearch">
+				<select class="select select-bordered select-sm w-36" x-model="addIntegrationStatusFilter">
+					<option value="">All Status</option>
+					<option value="enabled">Enabled</option>
+					<option value="disabled">Disabled</option>
+				</select>
+				<span class="text-xs text-base-content/50 whitespace-nowrap">
+					<span x-text="selectedDeploymentIds.size"></span> selected
+				</span>
+			</div>
+
+			<!-- Deployment list -->
+			<div class="border rounded-md overflow-hidden">
+				<!-- Loading -->
+				<div x-show="addIntegrationLoading" class="flex justify-center py-10">
+					<span class="loading loading-spinner loading-md"></span>
+				</div>
+
+				<!-- List -->
+				<div x-show="!addIntegrationLoading" class="max-h-96 overflow-y-auto">
+					<table class="table table-sm">
+						<thead class="sticky top-0 bg-base-200 z-10">
+							<tr>
+								<th class="w-10">
+									<!-- Select all visible -->
+									<input
+										type="checkbox"
+										class="checkbox checkbox-sm"
+										:checked="filteredModalDeployments.length > 0 && filteredModalDeployments.every(d => selectedDeploymentIds.has(d.id))"
+										:indeterminate="filteredModalDeployments.some(d => selectedDeploymentIds.has(d.id)) && !filteredModalDeployments.every(d => selectedDeploymentIds.has(d.id))"
+										@change="toggleAllVisible($event.target.checked)">
+								</th>
+								<th>Integration</th>
+								<th>Deployment ID</th>
+								<th>Status</th>
+							</tr>
+						</thead>
+						<tbody>
+							<template x-for="deployment in filteredModalDeployments" :key="deployment.id">
+								<tr
+									class="hover cursor-pointer"
+									:class="selectedDeploymentIds.has(deployment.id) ? 'bg-primary/5' : ''"
+									@click="toggleDeploymentSelection(deployment.id)">
+									<td @click.stop>
+										<input
+											type="checkbox"
+											class="checkbox checkbox-sm checkbox-primary"
+											:checked="selectedDeploymentIds.has(deployment.id)"
+											@change="toggleDeploymentSelection(deployment.id)">
+									</td>
+									<td>
+										<span class="blue-badge" x-text="deployment.integration_name"></span>
+									</td>
+									<td class="font-mono text-xs" x-text="deployment.id"></td>
+									<td>
+										<span :class="deployment.enabled ? 'green-badge' : 'red-badge'" x-text="deployment.enabled ? 'Enabled' : 'Disabled'"></span>
+									</td>
+								</tr>
+							</template>
+							<tr x-show="!addIntegrationLoading && filteredModalDeployments.length === 0">
+								<td colspan="5" class="text-center text-base-content/50 py-8">No deployments found</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+
+			<!-- Error -->
+			<div x-show="addIntegrationError" class="alert alert-error text-sm mt-4">
+				<svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-5 w-5" fill="none" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+				</svg>
+				<span x-text="addIntegrationError"></span>
+			</div>
+
+			<!-- Actions -->
+			<div class="modal-action">
+				<button class="btn btn-ghost" @click="closeAddIntegrationModal()" :disabled="addIntegrationSaving">Cancel</button>
+				<button
+					class="btn btn-primary"
+					:disabled="selectedDeploymentIds.size === 0 || addIntegrationSaving"
+					@click="saveAddedIntegrations()">
+					<span x-show="!addIntegrationSaving">
+						Add <span x-text="selectedDeploymentIds.size"></span> Deployment<span x-show="selectedDeploymentIds.size !== 1">s</span>
+					</span>
+					<span x-show="addIntegrationSaving" class="loading loading-spinner loading-sm"></span>
+				</button>
+			</div>
+		</div>
+		<div class="modal-backdrop" @click="closeAddIntegrationModal()"></div>
+	</dialog>
+	<!-- ================================================================== -->
 	<div x-show="showControlDeletionModal" class="modal modal-open">
-<!--		haaaa-->
 		<div class="modal-box">
 			<h3 class="font-bold text-lg mb-4">Delete Control</h3>
 			<div role="alert" class="alert">
@@ -3786,6 +4046,144 @@
 		</div>
 	</div>
 
+	<!-- ===================== VIOLATION DETAIL DRAWER ===================== -->
+	<div class="drawer drawer-end z-50">
+		<input id="violation-drawer" type="checkbox" class="drawer-toggle" />
+		<div class="drawer-content"></div>
+		<div class="drawer-side">
+			<label for="violation-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
+			<div class="bg-base-200 flex flex-col h-screen w-3/4 px-6">
+
+				<!-- Header -->
+				<div class="border-b border-base-300 pt-4 pb-4">
+					<div class="flex justify-between items-start">
+						<div class="flex flex-col gap-2">
+							<span class="blue-badge" x-text="selectedViolation.integration_name"></span>
+							<h2 class="text-xl font-bold" x-text="selectedViolation.name"></h2>
+							<p class="text-xs text-base-content/50" x-text="selectedViolation.end_time ? 'Last run: ' + selectedViolation.end_time : ''"></p>
+						</div>
+						<button @click="closeViolationDrawer()" class="btn btn-sm btn-ghost btn-circle">
+							<i class="ti ti-x text-xl"></i>
+						</button>
+					</div>
+				</div>
+
+				<!-- Scrollable body -->
+				<div class="flex-1 overflow-y-auto py-4 flex flex-col gap-4">
+
+					<!-- Controls -->
+					<div class="card bg-base-300 rounded-lg">
+						<div class="card-body p-4">
+							<h3 class="font-semibold text-sm flex items-center gap-2">
+								<i class="ti ti-shield-check text-warning"></i>
+								Impacted Controls
+								<span class="badge badge-sm" x-text="(selectedViolation.controls || []).length"></span>
+							</h3>
+							<div x-show="!selectedViolation.controls || selectedViolation.controls.length === 0"
+								 class="text-xs text-base-content/40 mt-1">No controls mapped to this check.</div>
+							<div class="flex flex-wrap gap-2 mt-2">
+								<template x-for="control in (selectedViolation.controls || [])" :key="control.framework + control.control_id">
+									<div class="flex flex-row gap-1 items-center bg-base-100 px-2 py-1 rounded-md">
+										<span class="text-xs font-semibold text-warning" x-text="control.framework"></span>
+										<span class="text-xs text-base-content/60">·</span>
+										<span class="text-xs font-mono" x-text="control.control_id"></span>
+									</div>
+								</template>
+							</div>
+						</div>
+					</div>
+
+					<!-- Message -->
+					<div x-show="selectedViolation.output_message" class="card bg-base-300 rounded-lg">
+						<div class="card-body p-4">
+							<h3 class="font-semibold text-sm flex items-center gap-2">
+								<i class="ti ti-message text-info"></i>
+								Message
+							</h3>
+							<p class="text-sm mt-2 text-base-content/80" x-text="selectedViolation.output_message"></p>
+						</div>
+					</div>
+
+					<!-- Output Data -->
+					<div x-show="selectedViolation.output_data" class="card bg-base-300 rounded-lg">
+						<div class="card-body p-4">
+							<h3 class="font-semibold text-sm flex items-center gap-2 mb-2">
+								<i class="ti ti-database text-success"></i>
+								Output Data
+							</h3>
+							<pre class="text-xs bg-base-100 rounded-md p-3 overflow-x-auto max-h-64 overflow-y-auto"
+								 x-text="JSON.stringify(selectedViolation.output_data, null, 2)"></pre>
+						</div>
+					</div>
+
+					<!-- Logs -->
+					<div x-show="selectedViolation.logs && selectedViolation.logs.length" class="card bg-base-300 rounded-lg">
+						<div class="card-body p-4">
+							<h3 class="font-semibold text-sm flex items-center gap-2 mb-2">
+								<i class="ti ti-terminal text-base-content/60"></i>
+								Logs
+								<span class="badge badge-sm" x-text="(selectedViolation.logs || []).length"></span>
+							</h3>
+							<div class="bg-base-100 rounded-md p-3 max-h-64 overflow-y-auto flex flex-col gap-1">
+								<template x-for="(log, i) in (selectedViolation.logs || [])" :key="i">
+									<p class="font-mono text-xs text-base-content/70" x-text="log"></p>
+								</template>
+							</div>
+						</div>
+					</div>
+
+					<!-- Matched Project Controls -->
+					<div class="card bg-base-300 rounded-lg">
+						<div class="card-body p-4">
+							<h3 class="font-semibold text-sm flex items-center gap-2 mb-2">
+								<i class="ti ti-list-check text-primary"></i>
+								Matched Project Controls
+								<span class="badge badge-sm" x-text="matchedProjectControls.length"></span>
+							</h3>
+
+							<div x-show="matchedProjectControls.length === 0" class="text-xs text-base-content/40">
+								No controls in this project match the violation's mapped controls.
+							</div>
+
+							<div x-show="matchedProjectControls.length > 0" class="overflow-x-auto">
+								<table class="table table-sm">
+									<thead>
+										<tr>
+											<th class="text-xs">Ref</th>
+											<th class="text-xs">Control Name</th>
+											<th class="text-xs">Status</th>
+											<th class="text-xs w-1"></th>
+										</tr>
+									</thead>
+									<tbody>
+										<template x-for="control in matchedProjectControls" :key="control.id">
+											<tr>
+												<td class="font-mono text-xs" x-text="control.ref_code"></td>
+												<td class="text-xs" x-text="control.name"></td>
+												<td>
+													<span :class="{
+														'text-success': control.status === 'complete',
+														'text-warning': control.status === 'in progress',
+														'text-error': control.status === 'not applicable',
+													}" class="text-xs uppercase font-semibold" x-text="control.status"></span>
+												</td>
+												<td>
+													<button @click="closeViolationDrawer(); openControlInDrawer(control)"
+															class="btn btn-xs btn-ghost">
+														<i class="ti ti-arrow-right text-md"></i>
+													</button>
+												</td>
+											</tr>
+										</template>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
 
 {%endblock%}
@@ -3881,7 +4279,6 @@ function project(){
 		  this.getProject()
 		  this.getControls(useCache=true)
 		  this.getPolicies()
-		  //this.getTenantPolicies()
 		  this.getProjectTags()
 		  this.getRisks()
 		  this.getProjectEvidence()
@@ -3933,6 +4330,7 @@ function project(){
 		policyId: null,
 		controls: [],
 		subcontrols: [],
+		selectedViolation: {},
 		filteredControls: [],
 		filteredSubControls: [],
 		showFeedbackModal: false,
@@ -3946,7 +4344,7 @@ function project(){
 		riskMessages: [],
 		messagesForControl: [],
 		tenantPolicies: [],
-		tabs: ["summary", "controls", "policies", "evidence", "comments", "risk register", "settings", "user management", "integrations", "control tags", "report"],
+		tabs: ["summary", "controls", "policies", "evidence", "comments", "risk register", "users", "integrations", "report", "settings"],
 		loadingSkeleton: '<span class="loading loading-dots loading-lg"></span>',
 		tabLoading: true,
 		tableLoading: true,
@@ -3958,6 +4356,13 @@ function project(){
 		respMatrixOperator: [],
 		policyAcceptance: "not started",
 		showHelpMenu: false,
+
+		projectDeployments: [],
+		projectViolations: [],
+		integrationsLoading: false,
+		deploymentsToRemove: new Set(),
+		removingIntegrations: false,
+		removeIntegrationError: null,
 
 		// vars for controls tab
 		controlFilter: {},
@@ -3973,6 +4378,7 @@ function project(){
 			"control_summary": true,
 			"controls": true,
 		},
+		selectedReport: {},
 		riskFilterStatus: null,
 		riskFilterPriority: null,
 		riskFilterRisk: null,
@@ -4012,7 +4418,7 @@ function project(){
 		expandedRow: null,
 		isControlOpen: false,
 		testSelectedSubControl: null,
-		hideFilterTab: false,
+		hideFilterTab: true,
 		loadingControls: true,
 		loadingControlsMessage: "Loading controls. Please wait...",
 		projectRefreshRequired: false,
@@ -4031,6 +4437,7 @@ function project(){
 		selectedControlTab: null,
 		showNAModalDisable:false,
 		showNAModalEnable:false,
+		showDeleteEvidenceModal: false,
 		selectedControl: null,
 		activeSideTab: "details",
 		activeSubSideTab: "details",
@@ -4049,6 +4456,15 @@ function project(){
 		hasFilter: false,
 		showControlDeletionModal: false,
 		riskRowsSelected: [],
+
+		// Add integration modal
+		addIntegrationSearch: '',
+		addIntegrationStatusFilter: '',
+		addIntegrationLoading: false,
+		addIntegrationSaving: false,
+		addIntegrationError: null,
+		addIntegrationDeployments: [],
+		selectedDeploymentIds: new Set(),
 		filter: {
           status: null,
           impact: null
@@ -4095,6 +4511,202 @@ function project(){
 		  {"field": "risk", "headerName": "Risk", "filter": "agTextColumnFilter", "cellRenderer": riskToVertBar},
 		  {"field": "priority", "headerName": "Priority", "filter": "agTextColumnFilter", "cellRenderer": priorityToVertBar},
 		],
+		get matchedProjectControls() {
+			if (!this.selectedViolation?.controls?.length || !this.controls?.length) return [];
+			const violationRefCodes = this.selectedViolation.controls.map(c => c.control_id.toLowerCase().trim());
+			return this.controls.filter(c =>
+				violationRefCodes.includes(c.ref_code?.toLowerCase().trim())
+			);
+		},
+		openViolationDrawer(violation) {
+			this.selectedViolation = violation;
+			document.getElementById('violation-drawer').checked = true;
+		},
+
+		closeViolationDrawer() {
+			document.getElementById('violation-drawer').checked = false;
+			this.selectedViolation = {};
+		},
+		async loadProjectDeployments() {
+			this.integrationsLoading = true;
+			try {
+				const response = await fetch(`/api/v1/projects/${this.projectId}/deployments`);
+				if (!response.ok) throw new Error(`HTTP ${response.status}`);
+				this.projectDeployments = await response.json();
+				await this.loadProjectViolations();
+			} catch (err) {
+				console.error('Failed to load project deployments:', err);
+			} finally {
+				this.integrationsLoading = false;
+			}
+		},
+
+		async loadProjectViolations() {
+			const violations = [];
+			await Promise.all(this.projectDeployments.map(async (deployment) => {
+				try {
+					const response = await fetch(`/api/v1/deployments/${deployment.id}/jobs?page=1&per_page=10`);
+					if (!response.ok) return;
+					const data = await response.json();
+
+					// Unwrap jobs key, find the most recent job with a result
+					const jobs = data.jobs || data;
+					const latestJob = jobs.find(j => j.result !== null && j.status === 'done');
+					if (!latestJob?.result) return;
+
+					for (const [name, check] of Object.entries(latestJob.result)) {
+						if (check.is_violation) {
+							violations.push({
+								name,
+								integration_name: deployment.integration_name,
+								deployment_id: deployment.id,
+								controls: check.controls || [],
+								end_time: check.end_time || null,
+								logs: check.logs || [],
+								output_message: check.output?.message || null,
+								output_data: check.output?.data || null,
+							});
+						}
+					}
+				} catch (err) {
+					console.error(`Failed to load jobs for deployment ${deployment.id}:`, err);
+				}
+			}));
+			this.projectViolations = violations;
+		},
+
+		openRemoveIntegrationModal() {
+			this.deploymentsToRemove = new Set();
+			this.removeIntegrationError = null;
+			document.getElementById('remove-integration-modal').showModal();
+		},
+
+		closeRemoveIntegrationModal() {
+			document.getElementById('remove-integration-modal').close();
+			this.deploymentsToRemove = new Set();
+			this.removeIntegrationError = null;
+		},
+
+		toggleRemoveSelection(id) {
+			const updated = new Set(this.deploymentsToRemove);
+			updated.has(id) ? updated.delete(id) : updated.add(id);
+			this.deploymentsToRemove = updated;
+		},
+
+		async confirmRemoveIntegrations() {
+			this.removingIntegrations = true;
+			this.removeIntegrationError = null;
+			try {
+				const response = await fetch(`/api/v1/projects/${this.projectId}/deployments`, {
+					method: 'DELETE',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ deployment_ids: [...this.deploymentsToRemove] }),
+				});
+				if (!response.ok) {
+					const err = await response.json().catch(() => ({}));
+					throw new Error(err.message || `HTTP ${response.status}`);
+				}
+				this.closeRemoveIntegrationModal();
+				toast('Integrations removed successfully!');
+				await this.loadProjectDeployments();
+			} catch (err) {
+				this.removeIntegrationError = err.message;
+			} finally {
+				this.removingIntegrations = false;
+			}
+		},
+
+		get filteredModalDeployments() {
+			let results = this.addIntegrationDeployments;
+			if (this.addIntegrationStatusFilter) {
+				const enabled = this.addIntegrationStatusFilter === 'enabled';
+				results = results.filter(d => d.enabled === enabled);
+			}
+			if (this.addIntegrationSearch) {
+				const s = this.addIntegrationSearch.toLowerCase();
+				results = results.filter(d =>
+					(d.integration_name || '').toLowerCase().includes(s) ||
+					String(d.id).toLowerCase().includes(s)
+				);
+			}
+			return results;
+		},
+		async openAddIntegrationModal() {
+			this.addIntegrationSearch = '';
+			this.addIntegrationStatusFilter = '';
+			this.addIntegrationError = null;
+			this.addIntegrationSaving = false;
+			this.selectedDeploymentIds = new Set();
+			document.getElementById('add-integration-modal').showModal();
+
+			// Fetch fresh deployments list
+			this.addIntegrationLoading = true;
+			try {
+<!--				const response = await fetch(`/api/v1/tenants/${this.$store.currentUser.selectedTenant.id}/deployments`);-->
+				const response = await fetch(`/api/v1/deployments`);
+
+				if (!response.ok) throw new Error(`HTTP ${response.status}`);
+				const data = await response.json();
+				this.addIntegrationDeployments = data.deployments || data;
+				// Also keep allDeployments in sync for name resolution
+				this.allDeployments = this.addIntegrationDeployments;
+			} catch (err) {
+				this.addIntegrationError = 'Failed to load deployments: ' + err.message;
+			} finally {
+				this.addIntegrationLoading = false;
+			}
+		},
+
+		closeAddIntegrationModal() {
+			document.getElementById('add-integration-modal').close();
+			this.selectedDeploymentIds = new Set();
+			this.addIntegrationError = null;
+		},
+
+		toggleDeploymentSelection(id) {
+			const updated = new Set(this.selectedDeploymentIds);
+			if (updated.has(id)) {
+				updated.delete(id);
+			} else {
+				updated.add(id);
+			}
+			this.selectedDeploymentIds = updated;
+		},
+
+		toggleAllVisible(checked) {
+			const updated = new Set(this.selectedDeploymentIds);
+			for (const d of this.filteredModalDeployments) {
+				if (checked) {
+					updated.add(d.id);
+				} else {
+					updated.delete(d.id);
+				}
+			}
+			this.selectedDeploymentIds = updated;
+		},
+
+		async saveAddedIntegrations() {
+			this.addIntegrationSaving = true;
+			this.addIntegrationError = null;
+			try {
+				const response = await fetch(`/api/v1/projects/${this.projectId}/deployments`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ deployment_ids: [...this.selectedDeploymentIds] }),
+				});
+				if (!response.ok) {
+					const err = await response.json().catch(() => ({}));
+					throw new Error(err.message || err.detail || `HTTP ${response.status}`);
+				}
+				this.closeAddIntegrationModal();
+				toast('Integrations added successfully!');
+			} catch (err) {
+				this.addIntegrationError = err.message;
+			} finally {
+				this.addIntegrationSaving = false;
+				await this.loadProjectDeployments();
+			}
+		},
 		removePolicy: function() {
 			if (!this.selectedPolicy) {
 				toast("No policy selected", "warning");
@@ -4115,7 +4727,6 @@ function project(){
 		},
 		// add new functions here
 		showControlDeletion() {
-<!--		haaaa-->
 			this.showControlDeletionModal = true
 		},
 		renderReportSection: function(doc, title, paragraph, data, cursorY) {
@@ -5562,6 +6173,9 @@ function project(){
 		  this.tabLoading = false;
 		  this.tableLoading = false;
 
+		  if (tab === 'integrations') {
+			this.loadProjectDeployments();  // ← add this
+		  }
 		  if (tab === "controls" || tab === "summary") {
 			if (!useCache) {
 				toast("Refreshing the controls, please wait...")
@@ -5980,6 +6594,10 @@ function project(){
 							matchesAllFilters = false;
 							break;
 						}
+						if (filterKey === "ref_code" && filterValue && !control.ref_code.toLowerCase().includes(filterValue.toLowerCase().trim())) {
+							matchesAllFilters = false;
+							break;
+						}
 						if (filterKey === "tags" && filterValue) {
 							const filterTags = (Array.isArray(filterValue) ? filterValue : [filterValue])
 								.map(tag => tag.toLowerCase().trim());
@@ -6276,6 +6894,20 @@ function project(){
 				data
 			);
 		},
+		deleteEvidence(evidence) {
+			request("DELETE",
+				`/api/v1/evidence/${evidence.id}`,
+				data => {
+					toast("Deleted evidence", level="success", duration=2000, bottom=true)
+					this.showDeleteEvidenceModal = false;
+					this.getProjectEvidence()
+					return(data)
+				},
+				error => {
+				  toast(error.message, "error");
+				}
+			);
+		},
 		deleteEvidenceFile(evidence) {
 			request("DELETE",
 				`/api/v1/projects/${this.projectId}/subcontrols/${this.selectedSubControl.id}/evidence/${evidence.id}/file`,
@@ -6410,6 +7042,7 @@ function project(){
 				// Convert non-2xx HTTP responses into errors
 				return response.json().then(errorData => {
 				  throw new Error(errorData.message);
+				  this.getProjectEvidence()
 				});
 			  }
 			  return response.json(); // Parse JSON response

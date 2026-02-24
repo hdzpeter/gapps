@@ -1,166 +1,761 @@
-{% extends "layouts/empty.html" %}
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API Explorer</title>
+<link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jmespath@0.16.0/jmespath.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Space+Grotesk:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #0f1526;
+    --surface2: #151d35;
+    --border: #1e2d52;
+    --accent: #3b82f6;
+    --accent2: #06b6d4;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --success: #10b981;
+    --error: #ef4444;
+    --warning: #f59e0b;
+  }
 
-{%block head%}
+  * { box-sizing: border-box; }
 
+  body {
+    font-family: 'Space Grotesk', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/3.0.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  code, pre, .mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
 
+  /* Scanline bg effect */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(59, 130, 246, 0.012) 2px,
+      rgba(59, 130, 246, 0.012) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
 
+  .header-glow {
+    background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 1px 0 0 rgba(59,130,246,0.15), 0 4px 24px rgba(0,0,0,0.4);
+  }
 
-{%endblock%}
+  .card-glass {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    transition: border-color 0.2s;
+  }
+  .card-glass:focus-within {
+    border-color: rgba(59,130,246,0.5);
+  }
 
-{%block body%}
-<div x-data="pdfReport()">
-  <button class="btn btn-primary" @click="generatePdf">Generate PDF</button>
+  .method-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 0.35rem 0.85rem;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.15s;
+  }
+  .method-GET { color: #10b981; border-color: rgba(16,185,129,0.3); background: rgba(16,185,129,0.08); }
+  .method-GET.active, .method-GET:hover { background: rgba(16,185,129,0.2); border-color: #10b981; }
+  .method-POST { color: #3b82f6; border-color: rgba(59,130,246,0.3); background: rgba(59,130,246,0.08); }
+  .method-POST.active, .method-POST:hover { background: rgba(59,130,246,0.2); border-color: #3b82f6; }
+  .method-PUT { color: #f59e0b; border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.08); }
+  .method-PUT.active, .method-PUT:hover { background: rgba(245,158,11,0.2); border-color: #f59e0b; }
+  .method-DELETE { color: #ef4444; border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.08); }
+  .method-DELETE.active, .method-DELETE:hover { background: rgba(239,68,68,0.2); border-color: #ef4444; }
+  .method-PATCH { color: #a855f7; border-color: rgba(168,85,247,0.3); background: rgba(168,85,247,0.08); }
+  .method-PATCH.active, .method-PATCH:hover { background: rgba(168,85,247,0.2); border-color: #a855f7; }
+
+  .url-input {
+    background: var(--surface2) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text) !important;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.875rem;
+    border-radius: 8px;
+    padding: 0.6rem 1rem;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .url-input:focus { border-color: var(--accent) !important; }
+  .url-input::placeholder { color: var(--muted); }
+
+  .send-btn {
+    background: linear-gradient(135deg, #3b82f6, #06b6d4);
+    color: white;
+    font-weight: 600;
+    font-size: 0.875rem;
+    padding: 0.6rem 1.5rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+    box-shadow: 0 0 20px rgba(59,130,246,0.3);
+  }
+  .send-btn:hover { transform: translateY(-1px); box-shadow: 0 0 30px rgba(59,130,246,0.5); }
+  .send-btn:active { transform: translateY(0); }
+  .send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .tab-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    padding: 0.4rem 0.9rem;
+    border-radius: 6px 6px 0 0;
+    cursor: pointer;
+    border: 1px solid transparent;
+    border-bottom: none;
+    color: var(--muted);
+    transition: all 0.15s;
+    background: transparent;
+  }
+  .tab-btn.active {
+    background: var(--surface2);
+    border-color: var(--border);
+    color: var(--accent);
+  }
+  .tab-btn:hover:not(.active) { color: var(--text); }
+
+  textarea.code-area {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    padding: 0.75rem 1rem;
+    resize: vertical;
+    outline: none;
+    width: 100%;
+    transition: border-color 0.2s;
+  }
+  textarea.code-area:focus { border-color: var(--accent); }
+  textarea.code-area::placeholder { color: var(--muted); }
+
+  .response-area {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    line-height: 1.7;
+    padding: 1rem;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 420px;
+  }
+
+  .status-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    letter-spacing: 0.04em;
+  }
+  .status-2xx { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+  .status-3xx { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+  .status-4xx { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+  .status-5xx { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+
+  .kv-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 0.4rem;
+  }
+  .kv-input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    padding: 0.35rem 0.65rem;
+    flex: 1;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .kv-input:focus { border-color: var(--accent); }
+  .kv-input::placeholder { color: var(--muted); }
+
+  .icon-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 0.3rem 0.5rem;
+    font-size: 0.8rem;
+    transition: all 0.15s;
+    line-height: 1;
+  }
+  .icon-btn:hover { color: var(--error); border-color: var(--error); }
+  .add-btn {
+    background: transparent;
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.78rem;
+    font-family: 'JetBrains Mono', monospace;
+    transition: all 0.15s;
+    margin-top: 0.25rem;
+  }
+  .add-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+  .json-key { color: #60a5fa; }
+  .json-string { color: #a3e635; }
+  .json-number { color: #fb923c; }
+  .json-bool { color: #f472b6; }
+  .json-null { color: var(--muted); }
+
+  .loading-dot {
+    animation: blink 1s step-start infinite;
+  }
+  .loading-dot:nth-child(2) { animation-delay: 0.33s; }
+  .loading-dot:nth-child(3) { animation-delay: 0.66s; }
+  @keyframes blink { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
+
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+
+  .jmespath-match {
+    background: rgba(6, 182, 212, 0.08);
+    border: 1px solid rgba(6, 182, 212, 0.25);
+    border-radius: 8px;
+    padding: 1rem;
+  }
+
+  .divider-line {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0;
+  }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  .slide-in {
+    animation: slideIn 0.25s ease-out;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .history-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border: 1px solid transparent;
+  }
+  .history-item:hover { background: var(--surface2); border-color: var(--border); }
+
+  select.styled-select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 0.35rem 0.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    outline: none;
+  }
+</style>
+</head>
+<body>
+
+<div x-data="apiExplorer()" class="min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <div class="header-glow px-6 py-3 flex items-center gap-3">
+    <div class="flex items-center gap-2">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2">
+        <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+      </svg>
+      <span class="font-bold text-sm tracking-widest mono text-blue-400">API_EXPLORER</span>
+    </div>
+    <div class="flex-1"></div>
+    <span class="text-xs mono text-slate-500">v1.0</span>
+  </div>
+
+  <div class="flex flex-1 overflow-hidden" style="height: calc(100vh - 49px);">
+
+    <!-- Sidebar: History -->
+    <div class="card-glass rounded-none border-y-0 border-l-0 w-56 flex flex-col overflow-hidden flex-shrink-0" style="border-radius:0; border-top:none; border-bottom:none; border-left:none;">
+      <div class="px-3 pt-3 pb-2">
+        <div class="section-label">History</div>
+      </div>
+      <div class="flex-1 overflow-y-auto px-2 pb-3">
+        <template x-if="history.length === 0">
+          <div class="text-xs mono text-slate-600 px-2 py-4 text-center">No requests yet</div>
+        </template>
+        <template x-for="(h, i) in history.slice().reverse()" :key="i">
+          <div class="history-item" @click="loadHistory(h)">
+            <span class="method-btn" :class="'method-' + h.method" style="padding: 0.15rem 0.45rem; font-size: 0.65rem;" x-text="h.method"></span>
+            <span class="text-xs mono text-slate-400 truncate" style="max-width: 120px;" :title="h.url" x-text="h.url.replace(/^https?:\/\//, '')"></span>
+          </div>
+        </template>
+      </div>
+      <div class="px-2 pb-2">
+        <button @click="history = []" class="add-btn w-full text-center" x-show="history.length > 0">Clear</button>
+      </div>
+    </div>
+
+    <!-- Main area -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+
+      <!-- Request builder -->
+      <div class="p-4 flex flex-col gap-3 flex-shrink-0" style="border-bottom: 1px solid var(--border);">
+
+        <!-- Method + URL + Send -->
+        <div class="flex gap-2 items-center">
+          <!-- Method selector -->
+          <div class="flex gap-1 flex-shrink-0">
+            <template x-for="m in methods" :key="m">
+              <button class="method-btn" :class="'method-' + m + (method === m ? ' active' : '')" @click="method = m" x-text="m"></button>
+            </template>
+          </div>
+          <input class="url-input flex-1" type="text" x-model="url" placeholder="https://api.example.com/endpoint" @keydown.enter="sendRequest" />
+          <button class="send-btn" @click="sendRequest" :disabled="loading || !url">
+            <span x-show="!loading">Send →</span>
+            <span x-show="loading" class="flex gap-0.5">
+              <span class="loading-dot">●</span><span class="loading-dot">●</span><span class="loading-dot">●</span>
+            </span>
+          </button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="flex gap-1" style="border-bottom: 1px solid var(--border); padding-bottom: 0;">
+          <button class="tab-btn" :class="activeTab === 'headers' ? 'active' : ''" @click="activeTab = 'headers'">Headers <span x-text="headers.filter(h=>h.key).length ? '(' + headers.filter(h=>h.key).length + ')' : ''" class="text-xs"></span></button>
+          <button class="tab-btn" :class="activeTab === 'params' ? 'active' : ''" @click="activeTab = 'params'">Params <span x-text="params.filter(p=>p.key).length ? '(' + params.filter(p=>p.key).length + ')' : ''" class="text-xs"></span></button>
+          <button class="tab-btn" :class="activeTab === 'body' ? 'active' : ''" @click="activeTab = 'body'">Body</button>
+          <button class="tab-btn" :class="activeTab === 'auth' ? 'active' : ''" @click="activeTab = 'auth'">Auth</button>
+        </div>
+
+        <!-- Tab content -->
+        <div class="slide-in" style="min-height: 90px;">
+
+          <!-- Headers tab -->
+          <div x-show="activeTab === 'headers'">
+            <template x-for="(h, i) in headers" :key="i">
+              <div class="kv-row">
+                <input class="kv-input" type="text" x-model="h.key" placeholder="Header name" />
+                <input class="kv-input" type="text" x-model="h.value" placeholder="Value" />
+                <button class="icon-btn" @click="headers.splice(i, 1)">✕</button>
+              </div>
+            </template>
+            <button class="add-btn" @click="headers.push({key:'', value:''})">+ Add Header</button>
+          </div>
+
+          <!-- Params tab -->
+          <div x-show="activeTab === 'params'">
+            <template x-for="(p, i) in params" :key="i">
+              <div class="kv-row">
+                <input class="kv-input" type="text" x-model="p.key" placeholder="Parameter name" />
+                <input class="kv-input" type="text" x-model="p.value" placeholder="Value" />
+                <button class="icon-btn" @click="params.splice(i, 1)">✕</button>
+              </div>
+            </template>
+            <button class="add-btn" @click="params.push({key:'', value:''})">+ Add Param</button>
+          </div>
+
+          <!-- Body tab -->
+          <div x-show="activeTab === 'body'">
+            <div class="flex items-center gap-2 mb-2">
+              <select class="styled-select" x-model="bodyType">
+                <option value="json">JSON</option>
+                <option value="text">Plain Text</option>
+                <option value="form">Form Data</option>
+              </select>
+              <button x-show="bodyType === 'json' && body" @click="formatBody" class="add-btn" style="margin-top:0;">Format JSON</button>
+            </div>
+            <div x-show="bodyType !== 'form'">
+              <textarea class="code-area" x-model="body" rows="4" :placeholder="bodyType === 'json' ? '{\n  \"key\": \"value\"\n}' : 'Enter request body...'"></textarea>
+            </div>
+            <div x-show="bodyType === 'form'">
+              <template x-for="(f, i) in formFields" :key="i">
+                <div class="kv-row">
+                  <input class="kv-input" type="text" x-model="f.key" placeholder="Field name" />
+                  <input class="kv-input" type="text" x-model="f.value" placeholder="Value" />
+                  <button class="icon-btn" @click="formFields.splice(i, 1)">✕</button>
+                </div>
+              </template>
+              <button class="add-btn" @click="formFields.push({key:'', value:''})">+ Add Field</button>
+            </div>
+          </div>
+
+          <!-- Auth tab -->
+          <div x-show="activeTab === 'auth'">
+            <div class="flex items-center gap-2 mb-2">
+              <select class="styled-select" x-model="authType">
+                <option value="none">No Auth</option>
+                <option value="bearer">Bearer Token</option>
+                <option value="basic">Basic Auth</option>
+                <option value="apikey">API Key</option>
+              </select>
+            </div>
+            <div x-show="authType === 'bearer'" class="kv-row">
+              <span class="kv-input" style="flex:none; width:auto; background:transparent; border:none; color:var(--muted);">Token</span>
+              <input class="kv-input" type="text" x-model="bearerToken" placeholder="Bearer token..." />
+            </div>
+            <div x-show="authType === 'basic'" class="flex flex-col gap-1">
+              <div class="kv-row">
+                <span class="kv-input" style="flex:none; width:70px; background:transparent; border:none; color:var(--muted);">Username</span>
+                <input class="kv-input" type="text" x-model="basicUser" placeholder="Username" />
+              </div>
+              <div class="kv-row">
+                <span class="kv-input" style="flex:none; width:70px; background:transparent; border:none; color:var(--muted);">Password</span>
+                <input class="kv-input" type="password" x-model="basicPass" placeholder="Password" />
+              </div>
+            </div>
+            <div x-show="authType === 'apikey'" class="flex flex-col gap-1">
+              <div class="kv-row">
+                <span class="kv-input" style="flex:none; width:70px; background:transparent; border:none; color:var(--muted);">Key Name</span>
+                <input class="kv-input" type="text" x-model="apiKeyName" placeholder="e.g. X-API-Key" />
+              </div>
+              <div class="kv-row">
+                <span class="kv-input" style="flex:none; width:70px; background:transparent; border:none; color:var(--muted);">Value</span>
+                <input class="kv-input" type="text" x-model="apiKeyValue" placeholder="API key value" />
+              </div>
+              <div class="kv-row">
+                <span class="kv-input" style="flex:none; width:70px; background:transparent; border:none; color:var(--muted);">Location</span>
+                <select class="styled-select" x-model="apiKeyLocation">
+                  <option value="header">Header</option>
+                  <option value="query">Query Param</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Response area -->
+      <div class="flex-1 overflow-auto flex flex-col">
+        <div class="p-4 flex flex-col gap-3 h-full">
+
+          <!-- No response state -->
+          <div x-show="!response && !error && !loading" class="flex-1 flex items-center justify-center">
+            <div class="text-center">
+              <div class="text-4xl mb-3 opacity-20">⚡</div>
+              <div class="mono text-xs text-slate-600">Send a request to see the response</div>
+            </div>
+          </div>
+
+          <!-- Error state -->
+          <div x-show="error" class="card-glass p-4 slide-in" style="border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.05);">
+            <div class="section-label" style="color: #ef4444;">Error</div>
+            <div class="mono text-sm text-red-400" x-text="error"></div>
+            <div x-show="corsNote" class="mt-2 text-xs text-slate-500 mono">
+              💡 Tip: CORS errors occur when the server doesn't allow browser-side requests. Try using a CORS proxy or make the request server-side.
+            </div>
+          </div>
+
+          <!-- Response -->
+          <div x-show="response" class="flex flex-col gap-3 slide-in">
+
+            <!-- Status bar -->
+            <div class="flex items-center gap-3 flex-wrap">
+              <span class="section-label" style="margin-bottom:0;">Response</span>
+              <span x-show="response" class="status-pill" :class="getStatusClass(response?.status)" x-text="response?.status + ' ' + response?.statusText"></span>
+              <span class="mono text-xs text-slate-500" x-text="response?.time ? response.time + 'ms' : ''"></span>
+              <span class="mono text-xs text-slate-500" x-text="response?.size ? formatSize(response.size) : ''"></span>
+              <div class="flex-1"></div>
+              <div class="flex gap-1">
+                <button class="tab-btn" :class="responseTab === 'body' ? 'active' : ''" @click="responseTab = 'body'">Body</button>
+                <button class="tab-btn" :class="responseTab === 'headers' ? 'active' : ''" @click="responseTab = 'headers'">Headers</button>
+                <button class="tab-btn" :class="responseTab === 'jmespath' ? 'active' : ''" @click="responseTab = 'jmespath'">JMESPath</button>
+              </div>
+              <button @click="copyResponse" class="add-btn" style="margin-top:0;">Copy</button>
+            </div>
+
+            <!-- Response body -->
+            <div x-show="responseTab === 'body'">
+              <pre class="response-area" x-html="highlightedResponse"></pre>
+            </div>
+
+            <!-- Response headers -->
+            <div x-show="responseTab === 'headers'">
+              <div class="response-area">
+                <template x-for="[k,v] in Object.entries(response?.headers || {})" :key="k">
+                  <div class="flex gap-2 mb-1">
+                    <span class="json-key" x-text="k + ':'"></span>
+                    <span class="json-string" x-text="v"></span>
+                  </div>
+                </template>
+                <div x-show="!Object.keys(response?.headers || {}).length" class="text-slate-600 mono text-xs">No headers</div>
+              </div>
+            </div>
+
+            <!-- JMESPath tab -->
+            <div x-show="responseTab === 'jmespath'" class="flex flex-col gap-3">
+              <div>
+                <div class="section-label">JMESPath Query</div>
+                <div class="flex gap-2">
+                  <input class="url-input" type="text" x-model="jmesQuery" placeholder="e.g. users[?age > `25`].name" @input="runJMESPath" style="flex:1;" />
+                  <button class="send-btn" @click="runJMESPath" style="padding: 0.6rem 1rem;">Query</button>
+                </div>
+                <div class="mt-1 mono text-xs text-slate-600">
+                  Examples: <span class="text-blue-500 cursor-pointer" @click="jmesQuery = 'items[0]'; runJMESPath()">items[0]</span> · 
+                  <span class="text-blue-500 cursor-pointer" @click="jmesQuery = 'data.users[*].name'; runJMESPath()">data.users[*].name</span> ·
+                  <span class="text-blue-500 cursor-pointer" @click="jmesQuery = 'length(items)'; runJMESPath()">length(items)</span>
+                </div>
+              </div>
+
+              <div x-show="jmesError" class="mono text-xs text-red-400" x-text="jmesError"></div>
+
+              <div x-show="jmesResult !== null">
+                <div class="section-label">Result</div>
+                <div class="jmespath-match">
+                  <pre class="mono text-sm" style="white-space:pre-wrap; word-break:break-all; color: #06b6d4; max-height: 300px; overflow:auto;" x-text="JSON.stringify(jmesResult, null, 2)"></pre>
+                </div>
+              </div>
+
+              <div x-show="jmesResult === null && !jmesError && jmesQuery" class="mono text-xs text-slate-600">No matches found</div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-{%endblock%}
 
-{%block extrajs%}
-  <script>
-    function loadImage(url) {
-      return new Promise((resolve) => {
-        const img = new Image();
-        img.crossOrigin = "Anonymous"; // Important for CORS
-        img.onload = () => resolve(img);
-        img.src = url;
-      });
-    }
-    function imageToBase64(img) {
-      const canvas = document.createElement("canvas");
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(img, 0, 0);
-      return canvas.toDataURL("image/png");
-    }
-
-    function renderSection(doc, title, paragraph, data, cursorY) {
-      const pageWidth = doc.internal.pageSize.getWidth();
-
-      // Title
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(14);
-      doc.setTextColor(...[54, 69, 79]);
-      doc.text(title, 20, cursorY);
-      cursorY += 6;
-
-      // Paragraph
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(9);
-      const lines = doc.splitTextToSize(paragraph, 170);
-      doc.text(lines, 20, cursorY);
-      cursorY += lines.length * 4.5; // smaller gap below paragraph
-
-      // Skip if there's no data
-      if (!data || data.length === 0) return cursorY;
-
-      // Extract headers and rows
-      const headers = [Object.keys(data[0])];
-      const body = data.map(row => Object.values(row));
-
-      // Table
-      doc.autoTable({
-        head: headers,
-        body: body,
-        startY: cursorY,
-        theme: 'grid',
-        headStyles: {
-          fillColor: [245, 245, 245],
-          textColor: [54, 69, 79],
-          fontStyle: 'bold',
-          halign: 'center',
-          lineWidth: 0
-        },
-        styles: {
-          fontSize: 9,
-          lineColor: [245, 245, 245],
-          textColor: [54, 69, 79],
-          cellPadding: 3,
-          halign: 'center'
-        }
-      });
-
-      return doc.lastAutoTable.finalY + 10;
-    }
-
-
-function pdfReport() {
+<script>
+function apiExplorer() {
   return {
-    config: {
-      security_risks: true,
-      infra_risks: true
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    method: 'GET',
+    url: '',
+    activeTab: 'headers',
+    responseTab: 'body',
+    headers: [{key: '', value: ''}],
+    params: [{key: '', value: ''}],
+    body: '',
+    bodyType: 'json',
+    formFields: [{key: '', value: ''}],
+    authType: 'none',
+    bearerToken: '',
+    basicUser: '',
+    basicPass: '',
+    apiKeyName: '',
+    apiKeyValue: '',
+    apiKeyLocation: 'header',
+    loading: false,
+    response: null,
+    error: null,
+    corsNote: false,
+    history: [],
+    jmesQuery: '',
+    jmesResult: null,
+    jmesError: null,
+    highlightedResponse: '',
+
+    getStatusClass(status) {
+      if (!status) return '';
+      if (status >= 200 && status < 300) return 'status-2xx';
+      if (status >= 300 && status < 400) return 'status-3xx';
+      if (status >= 400 && status < 500) return 'status-4xx';
+      return 'status-5xx';
     },
 
-    async generatePdf() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
+    formatSize(bytes) {
+      if (bytes < 1024) return bytes + 'B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + 'KB';
+      return (bytes / (1024 * 1024)).toFixed(1) + 'MB';
+    },
 
-      const baseColor = [54, 69, 79];
-      const pageWidth = doc.internal.pageSize.getWidth();
+    formatBody() {
+      try {
+        this.body = JSON.stringify(JSON.parse(this.body), null, 2);
+      } catch(e) {}
+    },
 
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(9);
-      doc.setTextColor(...baseColor);
-
-      const title = "Risk Report";
-
-      // Load and render image
-      const imageUrl = '/static/img/icon.png';
-      const img = await loadImage(imageUrl);
-      const base64Image = await imageToBase64(img);
-
-      const imgX = 20, imgY = 12, imgSize = 10;
-      const textX = imgX + imgSize + 5;
-      const textY = 20;
-
-      doc.addImage(base64Image, 'PNG', imgX, imgY, imgSize, imgSize);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(20);
-      doc.text(title, textX, textY);
-
-      // Divider
-      doc.setDrawColor(200);
-      doc.line(20, 25, pageWidth - 20, 25);
-
-      let cursorY = 35;
-
-      if (this.config.security_risks) {
-          const data = [
-            { "Title": "Lack of MFA", "Status": "In progress", "Description": "Third party services lack MFA...", "Owner": "bmarshall" },
-            { "Title": "Lack of network controls", "Status": "complete", "Description": "Third party services lack MFA", "Owner": "bmarshall" }
-          ];
-
-          cursorY = renderSection(
-            doc,
-            "Account Security Risks",
-            "This section outlines security risks related to identity, authentication, and access management. Each item includes the current status and owner for follow-up.",
-            data,
-            cursorY
-          );
+    buildUrl() {
+      let finalUrl = this.url;
+      const activeParams = this.params.filter(p => p.key);
+      if (this.authType === 'apikey' && this.apiKeyLocation === 'query' && this.apiKeyName) {
+        activeParams.push({key: this.apiKeyName, value: this.apiKeyValue});
       }
-
-      if (this.config.infra_risks) {
-          const data = [
-            { "Category": "Identity", "Risk": "No MFA on Okta Admins", "Severity": "High" },
-            { "Category": "Network", "Risk": "Wide open VPC ingress", "Severity": "Medium" },
-            { "Category": "Application", "Risk": "Outdated dependencies", "Severity": "Low" }
-          ];
-
-          cursorY = renderSection(
-            doc,
-            "Infrastructure Risks",
-            "This section highlights risks related to networking, system configuration, and deployment pipelines. Severity is based on potential impact.",
-            data,
-            cursorY
-          );
+      if (activeParams.length) {
+        const sep = finalUrl.includes('?') ? '&' : '?';
+        finalUrl += sep + activeParams.map(p => encodeURIComponent(p.key) + '=' + encodeURIComponent(p.value)).join('&');
       }
+      return finalUrl;
+    },
 
-      doc.save("report.pdf");
+    buildHeaders() {
+      const hdrs = {};
+      this.headers.filter(h => h.key).forEach(h => { hdrs[h.key] = h.value; });
+      if (this.authType === 'bearer' && this.bearerToken) {
+        hdrs['Authorization'] = 'Bearer ' + this.bearerToken;
+      }
+      if (this.authType === 'basic' && this.basicUser) {
+        hdrs['Authorization'] = 'Basic ' + btoa(this.basicUser + ':' + this.basicPass);
+      }
+      if (this.authType === 'apikey' && this.apiKeyLocation === 'header' && this.apiKeyName) {
+        hdrs[this.apiKeyName] = this.apiKeyValue;
+      }
+      return hdrs;
+    },
+
+    async sendRequest() {
+      if (!this.url || this.loading) return;
+      this.loading = true;
+      this.response = null;
+      this.error = null;
+      this.corsNote = false;
+      this.jmesResult = null;
+      this.jmesError = null;
+
+      const start = Date.now();
+      try {
+        const opts = {
+          method: this.method,
+          headers: this.buildHeaders(),
+        };
+        if (!['GET', 'HEAD'].includes(this.method)) {
+          if (this.bodyType === 'json' && this.body) {
+            opts.headers['Content-Type'] = opts.headers['Content-Type'] || 'application/json';
+            opts.body = this.body;
+          } else if (this.bodyType === 'text' && this.body) {
+            opts.headers['Content-Type'] = opts.headers['Content-Type'] || 'text/plain';
+            opts.body = this.body;
+          } else if (this.bodyType === 'form') {
+            const fd = new FormData();
+            this.formFields.filter(f => f.key).forEach(f => fd.append(f.key, f.value));
+            opts.body = fd;
+          }
+        }
+
+        const res = await fetch(this.buildUrl(), opts);
+        const elapsed = Date.now() - start;
+        const text = await res.text();
+        let parsed = null;
+        let isJson = false;
+        try { parsed = JSON.parse(text); isJson = true; } catch(e) {}
+
+        const responseHeaders = {};
+        res.headers.forEach((v, k) => { responseHeaders[k] = v; });
+
+        this.response = {
+          status: res.status,
+          statusText: res.statusText,
+          headers: responseHeaders,
+          body: isJson ? JSON.stringify(parsed, null, 2) : text,
+          data: parsed,
+          isJson,
+          time: elapsed,
+          size: new TextEncoder().encode(text).length
+        };
+
+        this.highlightedResponse = this.response.isJson
+          ? this.syntaxHighlight(this.response.body)
+          : this.escapeHtml(this.response.body);
+
+        this.history.unshift({ method: this.method, url: this.url, headers: [...this.headers], params: [...this.params], body: this.body, bodyType: this.bodyType, authType: this.authType });
+        if (this.history.length > 30) this.history.pop();
+
+      } catch(e) {
+        this.error = e.message;
+        this.corsNote = e.message.toLowerCase().includes('failed to fetch') || e.message.toLowerCase().includes('cors');
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    escapeHtml(text) {
+      return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    },
+
+    syntaxHighlight(json) {
+      const escaped = this.escapeHtml(json);
+      return escaped.replace(
+        /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+        match => {
+          let cls = 'json-number';
+          if (/^"/.test(match)) cls = /:$/.test(match) ? 'json-key' : 'json-string';
+          else if (/true|false/.test(match)) cls = 'json-bool';
+          else if (/null/.test(match)) cls = 'json-null';
+          return `<span class="${cls}">${match}</span>`;
+        }
+      );
+    },
+
+    runJMESPath() {
+      this.jmesResult = null;
+      this.jmesError = null;
+      if (!this.jmesQuery || !this.response) return;
+      const data = this.response.isJson ? this.response.data : null;
+      if (!data) { this.jmesError = 'Response is not valid JSON'; return; }
+      try {
+        this.jmesResult = jmespath.search(data, this.jmesQuery);
+      } catch(e) {
+        this.jmesError = e.message;
+      }
+    },
+
+    copyResponse() {
+      if (this.response?.body) navigator.clipboard.writeText(this.response.body);
+    },
+
+    loadHistory(h) {
+      this.method = h.method;
+      this.url = h.url;
+      this.headers = h.headers?.length ? [...h.headers] : [{key:'', value:''}];
+      this.params = h.params?.length ? [...h.params] : [{key:'', value:''}];
+      this.body = h.body || '';
+      this.bodyType = h.bodyType || 'json';
+      this.authType = h.authType || 'none';
     }
-  };
+  }
 }
-
-
-  </script>
-{%endblock%}
+</script>
+</body>
+</html>

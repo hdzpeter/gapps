@@ -345,7 +345,6 @@ def get_evidence(eid):
     result = Authorizer(current_user).can_user_read_evidence(eid)
     return jsonify(result["extra"]["evidence"].as_dict())
 
-
 @api.route("/evidence/<string:id>/file", methods=["GET"])
 @login_required
 def get_file_for_evidence(id):

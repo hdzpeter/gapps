@@ -51,9 +51,7 @@ def login_required(view_function):
     @wraps(view_function)
     def decorator(*args, **kwargs):
         # Try to authenticate with a token (API login, must have token in HTTP header)
-        api = False
         if token := request.headers.get("token"):
-            api = True
             if not (user := validate_token_in_header(token)):
                 return jsonify({"message": "Invalid authentication"}), 401
             custom_login(user)
@@ -65,20 +63,6 @@ def login_required(view_function):
                 logout_user()
                 flash("User account is disabled", "warning")
                 return redirect(url_for("auth.get_login"))
-
-            # TODO - implement trial period
-            # if current_user.license == "trial":
-            #     given_date = arrow.get(user.date_added)
-            #     expiration_date = given_date.shift(days=user.trial_days)
-            #     current_date = arrow.now()
-            #     if current_date >= expiration_date:
-            #         flash(
-            #             _l(
-            #                 f"Your trial period is over. Please send us an email: {current_app.config['DEFAULT_EMAIL']}"
-            #             ),
-            #             "warning",
-            #         )
-            #         return redirect(next_page or url_for("auth.get_login"))
 
             # Allow authenticated user to send email confirmation
             if not current_user.email_confirmed_at and request.endpoint not in [

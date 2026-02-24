@@ -7,10 +7,6 @@ from app.utils.decorators import login_required
 from app.utils.integrations import api_get, api_post, api_put, api_delete
 
 
-# -------------------------
-# Integration Endpoints
-# -------------------------
-
 @api.route("/integrations", methods=["GET"])
 @login_required
 def list_integrations():
@@ -81,7 +77,14 @@ def list_violations_for_deployment(id):
     response = api_get(f"deployments/{id}/violations")
     return jsonify(response)
 
-
+@api.route("/deployments/<string:id>/jobs", methods=["GET"])
+@login_required
+def list_jobs_for_deployment(id):
+    params = {
+        "deployment_id": id,
+    }
+    response = api_get(f"jobs", params=params)
+    return jsonify(response)
 # -------------------------
 # Job Endpoints
 # -------------------------
@@ -104,7 +107,7 @@ def get_job(job_id):
     response = api_get(f"jobs/{job_id}")
     return jsonify(response)
 
-@api.route("/deployments/<string:deployment_id>/jobs", methods=["POST", "GET"])
+@api.route("/deployments/<string:deployment_id>/jobs", methods=["POST"])
 @login_required
 def execute_manual_deployment(deployment_id):
     response = api_get(f"deployments/{deployment_id}")
@@ -130,4 +133,35 @@ def deploy_integrations():
 @login_required
 def list_violations():
     response = api_get("violations")
+    return jsonify(response)
+
+# -------------------------
+# Project Endpoints
+# -------------------------
+@api.route("/projects/<string:id>/deployments", methods=["GET"])
+@login_required
+def get_deployments_for_project(id):
+    #result = Authorizer(current_user).can_user_edit_project(id)
+    deployments = []
+    response = api_get("deployments")
+    for deployment in response:
+        if id in deployment.get("project_ids"):
+            deployments.append(deployment)
+    return jsonify(deployments)
+
+@api.route("/projects/<string:id>/deployments", methods=["POST"])
+@login_required
+def update_deployments_for_project(id):
+    #result = Authorizer(current_user).can_user_edit_project(id)
+
+    data = request.get_json()
+    if not data or 'deployment_ids' not in data:
+        return jsonify({'message': 'deployment_ids is required'}), 400
+
+    deployment_ids = data['deployment_ids']
+    if not isinstance(deployment_ids, list) or len(deployment_ids) == 0:
+        return jsonify({'message': 'deployment_ids must be a non-empty list'}), 400
+
+    payload = {"deployment_ids": deployment_ids}
+    response = api_post(f"/projects/{id}/deployments", payload=payload)
     return jsonify(response)
