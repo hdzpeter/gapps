@@ -6643,6 +6643,10 @@ html:has(.drawer-toggle:checked) {
   min-height: 100vh;
 }
 
+.min-h-0 {
+  min-height: 0px;
+}
+
 .w-0\.5 {
   width: 0.125rem;
 }
@@ -6869,6 +6873,10 @@ html:has(.drawer-toggle:checked) {
   flex-shrink: 0;
 }
 
+.flex-shrink {
+  flex-shrink: 1;
+}
+
 .shrink-0 {
   flex-shrink: 0;
 }
@@ -6879,6 +6887,10 @@ html:has(.drawer-toggle:checked) {
 
 .grow {
   flex-grow: 1;
+}
+
+.border-collapse {
+  border-collapse: collapse;
 }
 
 .-translate-x-1\/2 {
@@ -7190,6 +7202,10 @@ html:has(.drawer-toggle:checked) {
 
 .gap-0\.5 {
   gap: 0.125rem;
+}
+
+.gap-5 {
+  gap: 1.25rem;
 }
 
 .gap-x-0\.5 {
@@ -8052,6 +8068,10 @@ html:has(.drawer-toggle:checked) {
   padding-right: 0.25rem;
 }
 
+.pb-0 {
+  padding-bottom: 0px;
+}
+
 .text-left {
   text-align: left;
 }
@@ -8135,6 +8155,11 @@ html:has(.drawer-toggle:checked) {
 .text-xs {
   font-size: 0.7rem;
   line-height: 1rem;
+}
+
+.text-5xl {
+  font-size: 3rem;
+  line-height: 1;
 }
 
 .font-bold {
@@ -8438,6 +8463,10 @@ html:has(.drawer-toggle:checked) {
 
 .opacity-20 {
   opacity: 0.2;
+}
+
+.opacity-10 {
+  opacity: 0.1;
 }
 
 .shadow {

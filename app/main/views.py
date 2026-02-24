@@ -6,14 +6,6 @@ from app.utils.decorators import *
 from app.utils.authorizer import Authorizer
 
 
-@main.route("/test", methods=["GET"])
-@login_required
-def test():
-    if request.args.get("2"):
-        return render_template("policy_center.html")
-    return render_template("test.html")
-
-
 @main.route("/", methods=["GET"])
 @login_required
 def home():
@@ -44,13 +36,6 @@ def frameworks():
 def risks(id):
     Authorizer(current_user).can_user_access_risk_module(id)
     return render_template("risk_register.html")
-
-
-@main.route("/policies", methods=["GET"])
-@login_required
-def policies():
-    return render_template("policies.html")
-
 
 @main.route("/tenants/<string:id>/policy-center", methods=["GET"])
 @login_required
@@ -92,38 +77,3 @@ def view_policy_center_for_project(id):
     return render_template(
         "policy_center.html", project=result["extra"]["project"], policy_id=policy_id
     )
-
-
-@main.route("/labels", methods=["GET"])
-@login_required
-def labels():
-    return render_template("labels.html")
-
-
-@main.route("/tags", methods=["GET"])
-@login_required
-def tags():
-    return render_template("tags.html")
-
-
-@main.route("/vendors/<string:id>", methods=["GET"])
-@login_required
-def get_vendor(id):
-    result = Authorizer(current_user).can_user_access_vendor(id)
-    vendor = result["extra"]["vendor"]
-    return render_template("view_vendor.html", vendor=vendor)
-
-
-@main.route("/applications/<string:id>", methods=["GET"])
-@login_required
-def get_application(id):
-    result = Authorizer(current_user).can_user_access_application(id)
-    application = result["extra"]["application"]
-    return render_template("view_application.html", application=application)
-
-
-@main.route("/search-vendors", methods=["GET"])
-@login_required
-def search_vendor():
-    # TODO - auth
-    return render_template("search_vendor.html")
