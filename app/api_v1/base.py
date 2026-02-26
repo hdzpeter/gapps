@@ -25,7 +25,6 @@ Helper endpoints
 def get_health():
     return jsonify({"message": "ok"})
 
-
 @api.route("/feature-flags", methods=["GET"])
 @login_required
 def get_feature_flags():

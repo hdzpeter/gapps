@@ -1,12 +1,8 @@
 from flask import (
-    render_template,
     redirect,
     url_for,
-    abort,
     flash,
     request,
-    current_app,
-    jsonify,
 )
 from . import main
 from app.models import *

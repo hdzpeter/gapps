@@ -13,10 +13,8 @@ app = create_app(os.getenv("FLASK_CONFIG") or "default")
 
 def test():
     with app.app_context():
-        tenant = Tenant.query.first()
-        print(tenant)
-        r = tenant.create_risk(title="Lack of MFA and Auth", risk="critical")
-        print(r)
+        p = ProjectPolicy.query.get("wrtaz2en")
+        print(p)
 
 
 test()

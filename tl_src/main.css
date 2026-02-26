@@ -3,6 +3,10 @@
 @import 'tailwindcss/utilities';
 @import 'tailwindcss/typography';
 
+[data-theme="dark"] .border {
+  border-color: var(--fallback-bc,oklch(var(--bc)/0.2));
+}
+
 .pill {
   @apply px-2 py-0.5 rounded-lg font-semibold uppercase justify-center inline-flex items-center self-start;
 }
@@ -28,7 +32,7 @@
 }
 
 .gray-badge {
-  @apply font-medium capitalize text-gray-600 bg-gray-400/10 rounded-md py-1 px-3 w-fit border-gray-400/10;
+  @apply font-medium capitalize text-gray-400 bg-gray-400/10 rounded-md py-1 px-3 w-fit border-gray-400/10;
 }
 
 .subtitle {

@@ -155,62 +155,6 @@ class Authorizer:
             return self.return_response(True, AUTHORIZED_MSG, 200, tenant=tenant)
         return self.return_response(False, UNAUTHORIZED_MSG, 403)
 
-    # tenant assessment
-    def can_user_manage_assessment(self, assessment):
-        if not (assessment := self.id_to_obj("Assessment", assessment)):
-            return self.return_response(False, "assessment not found", 404)
-        if self.user.id == assessment.owner_id or self._can_user_manage_tenant(
-            assessment.tenant
-        ):
-            return self.return_response(
-                True, AUTHORIZED_MSG, 200, assessment=assessment
-            )
-        return self.return_response(False, UNAUTHORIZED_MSG, 403)
-
-    def can_user_read_assessment(self, assessment):
-        if not (assessment := self.id_to_obj("Assessment", assessment)):
-            return self.return_response(False, "assessment not found", 404)
-        if self._can_user_access_tenant(assessment.tenant) or assessment.has_guest(
-            self.user.email
-        ):
-            return self.return_response(
-                True, AUTHORIZED_MSG, 200, assessment=assessment
-            )
-        return self.return_response(False, UNAUTHORIZED_MSG, 403)
-
-    def can_user_respond_to_assessment(self, assessment):
-        if not (assessment := self.id_to_obj("Assessment", assessment)):
-            return self.return_response(False, "assessment not found", 404)
-
-        if assessment.has_guest(self.user.email) or self._can_user_admin_tenant(
-            assessment.tenant
-        ):
-            return self.return_response(
-                True, AUTHORIZED_MSG, 200, assessment=assessment
-            )
-        return self.return_response(False, UNAUTHORIZED_MSG, 403)
-
-    def can_user_manage_question(self, question):
-        if not (question := self.id_to_obj("FormItem", question)):
-            return self.return_response(False, "question not found", 404)
-        # TODO - check if user can manage question
-        return self.return_response(True, AUTHORIZED_MSG, 200, question=question)
-        # return self.return_response(False, UNAUTHORIZED_MSG, 403)
-
-    def can_user_manage_form(self, form):
-        if not (form := self.id_to_obj("Form", form)):
-            return self.return_response(False, "form not found", 404)
-        if self._can_user_manage_risk(form.tenant):
-            return self.return_response(True, AUTHORIZED_MSG, 200, form=form)
-        return self.return_response(False, UNAUTHORIZED_MSG, 403)
-
-    def can_user_read_form(self, form):
-        if not (form := self.id_to_obj("Form", form)):
-            return self.return_response(False, "form not found", 404)
-        if self._can_user_access_risk_module(form.tenant):
-            return self.return_response(True, AUTHORIZED_MSG, 200, form=form)
-        return self.return_response(False, UNAUTHORIZED_MSG, 403)
-
     # tenant tag
     def can_user_manage_tag(self, tag):
         if not (tag := self.id_to_obj("Tag", tag)):
@@ -553,25 +497,26 @@ class Authorizer:
         return self.return_response(False, UNAUTHORIZED_MSG, 403)
 
     def can_user_add_policy_to_project(self, policy, project):
-        if not (policy := self.id_to_obj("Policy", policy)):
+        if not (policy := self.id_to_obj("ProjectPolicy", policy)):
             return self.return_response(False, "policy not found", 404)
         if not (project := self.id_to_obj("Project", project)):
             return self.return_response(False, "project not found", 404)
-        if self._can_user_edit_project(project) and policy.tenant == project.tenant:
+        if self._can_user_edit_project(project) and policy.project == project:
             return self.return_response(
                 True, AUTHORIZED_MSG, 200, policy=policy, project=project
             )
         return self.return_response(False, UNAUTHORIZED_MSG, 403)
 
     def can_user_delete_policy_from_project(self, policy, project):
+        print(policy)
         return self.can_user_add_policy_to_project(policy, project)
 
     def can_user_add_control_to_project(self, control, project):
-        if not (control := self.id_to_obj("Control", control)):
+        if not (control := self.id_to_obj("ProjectControl", control)):
             return self.return_response(False, "control not found", 404)
         if not (project := self.id_to_obj("Project", project)):
             return self.return_response(False, "project not found", 404)
-        if self._can_user_edit_project(project) and control.tenant == project.tenant:
+        if self._can_user_edit_project(project) and control.project== project:
             return self.return_response(
                 True, AUTHORIZED_MSG, 200, control=control, project=project
             )

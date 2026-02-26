@@ -70,7 +70,7 @@ module.exports = {
             "info": "#55cbd3",
             "success": "#22c55e",
             "warning": "#eab308",
-            "error": "#fc605f",
+            "error": "#fc605f"
           }
        }
     ]
