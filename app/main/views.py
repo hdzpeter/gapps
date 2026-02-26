@@ -30,6 +30,11 @@ def download_report(pid, filename):
 def frameworks():
     return render_template("frameworks.html")
 
+@main.route("/violations", methods=["GET"])
+@login_required
+def violations():
+    return render_template("violations.html")
+
 
 @main.route("/tenants/<string:id>/risk", methods=["GET"])
 @login_required
