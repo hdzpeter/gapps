@@ -7,6 +7,13 @@
 {%block content%}
 <div x-data="page()" x-init="init()" class="py-6">
 
+    <div x-show="integrationsHealth === 'unhealthy'" class="alert alert-error mb-6 text-white" x-cloak>
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span>Integrations platform is not configured and/or unhealthy. Please view the documentation for more information.</span>
+    </div>
+
     <div class="drawer drawer-end">
         <input id="details-drawer" type="checkbox" class="drawer-toggle" x-model="drawerOpen" />
 
@@ -46,6 +53,11 @@
                             placeholder="Search integrations..."
                             class="input input-bordered input-sm w-64"
                             x-model="filters.integrations">
+                        <!-- Service integrations toggle -->
+                        <label class="flex items-center gap-2 cursor-pointer select-none text-sm" title="Show integrations marked as services">
+                            <span class="text-base-content/70">Show services</span>
+                            <input type="checkbox" class="toggle toggle-sm toggle-primary" x-model="filters.showServices">
+                        </label>
                         <button @click="loadIntegrations()" class="btn btn-sm btn-ghost" :disabled="loading">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" :class="{'animate-spin': loading}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -136,7 +148,11 @@
                     <template x-for="integration in filteredIntegrations" :key="integration.id">
                         <div class="card border hover:shadow-2xl transition-shadow cursor-pointer" @click="openDrawer('integration', integration)">
                             <div class="card-body">
-                                <h2 class="card-title" x-text="integration.title || integration.name"></h2>
+                                <div class="flex justify-between">
+                                    <h2 class="card-title" x-text="integration.title || integration.name"></h2>
+                                    <span x-show="integration.is_service" class="red-badge text-xs">Service</span>
+                                </div>
+
                                 <p class="text-sm text-base-content/70" x-text="integration.description"></p>
 
                                 <div class="divider my-2"></div>
@@ -1254,6 +1270,7 @@ function page(){
         // Filters
         filters: {
             integrations: '',
+            showServices: false,   // false = hide service integrations by default
             deployments: '',
             deploymentStatus: '',
             deploymentQueue: '',
@@ -1315,7 +1332,7 @@ function page(){
             this.deleting = true;
             this.deleteError = null;
             try {
-                const response = await fetch(`/api/v1/deployments/${this.deploymentToDelete.id}`, {
+                const response = await fetch(`/api/v1/tenants/${this.$store.currentUser.selectedTenant.id}/deployments/${this.deploymentToDelete.id}`, {
                     method: 'DELETE',
                 });
                 if (!response.ok) {
@@ -1374,7 +1391,7 @@ function page(){
         },
         async postManualDeployment(id) {
             try {
-                const response = await fetch(`/api/v1/deployments/${id}/jobs`, {
+                const response = await fetch(`/api/v1/tenants/${this.$store.currentUser.selectedTenant.id}/deployments/${id}/jobs`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' }
                 });
@@ -1390,7 +1407,7 @@ function page(){
         },
         async initIntegrations() {
             try {
-                const response = await fetch('/api/v1/init-integrations', {
+                const response = await fetch(`/api/v1/init-integrations`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' }
                 });
@@ -1426,10 +1443,15 @@ function page(){
 
         async loadIntegrations() {
             try {
-                const response = await fetch('/api/v1/integrations');
-                if (!response.ok) toast('Failed to load integrations', "error");
-                this.integrations = await response.json();
-                this.integrationsHealth = "healthy";
+                const response = await fetch(`/api/v1/integrations`);
+                if (!response.ok) {
+                    this.integrationsHealth = "unhealthy";
+                    toast('Failed to load integrations', "error");
+                    toast("test")
+                } else {
+                    this.integrations = await response.json();
+                    this.integrationsHealth = "healthy";
+                }
             } catch (err) {
                 console.error('Error loading integrations:', err);
                 this.integrationsHealth = "unhealthy";
@@ -1442,7 +1464,7 @@ function page(){
                 const params = new URLSearchParams({ page: this.deploymentsPage, per_page: this.deploymentsPerPage });
                 if (this.filters.deploymentStatus) params.append('status', this.filters.deploymentStatus);
                 if (this.filters.deploymentQueue) params.append('queue', this.filters.deploymentQueue);
-                const response = await fetch(`/api/v1/deployments?${params}`);
+                const response = await fetch(`/api/v1/tenants/${this.$store.currentUser.selectedTenant.id}/deployments?${params}`);
                 if (!response.ok) toast("Unable to load deployments", "error");
                 const data = await response.json();
                 if (data.deployments && data.pagination) {
@@ -1463,7 +1485,7 @@ function page(){
                 if (this.filters.jobs) params.append('search', this.filters.jobs);
                 if (this.filters.jobStatus) params.append('status', this.filters.jobStatus);
                 if (this.filters.jobDeploymentId) params.append('deployment_id', this.filters.jobDeploymentId);
-                const response = await fetch(`/api/v1/jobs?${params}`);
+                const response = await fetch(`/api/v1/tenants/${this.$store.currentUser.selectedTenant.id}/jobs?${params}`);
                 if (!response.ok) toast('Failed to load jobs', "error");
                 const data = await response.json();
                 if (data.jobs && data.pagination) {
@@ -1480,7 +1502,7 @@ function page(){
 
         async loadAllDeployments() {
             try {
-                const response = await fetch('/api/v1/deployments?page=1&per_page=100');
+                const response = await fetch(`/api/v1/tenants/${this.$store.currentUser.selectedTenant.id}/deployments?page=1&per_page=100`);
                 if (!response.ok) toast('Failed to load all deployments', "error");
                 const data = await response.json();
                 this.allDeployments = data.deployments || data;
@@ -1491,7 +1513,7 @@ function page(){
 
         async loadAllJobs() {
             try {
-                const response = await fetch('/api/v1/jobs?page=1&per_page=100');
+                const response = await fetch(`/api/v1/tenants/${this.$store.currentUser.selectedTenant.id}/jobs?page=1&per_page=100`);
                 if (!response.ok) toast('Failed to load all jobs', "error");
                 const data = await response.json();
                 this.allJobs = data.jobs || data;
@@ -1534,7 +1556,7 @@ function page(){
                     enabled: this.editedDetails.enabled,
                     schedule: this.editedDetails.schedule || null,
                 };
-                const response = await fetch(`/api/v1/deployments/${this.selectedItem.id}`, {
+                const response = await fetch(`/api/v1/tenants/${this.$store.currentUser.selectedTenant.id}/deployments/${this.selectedItem.id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload),
@@ -1693,7 +1715,7 @@ function page(){
                 if (this.createDeployment.settings.schedule !== 'manual') {
                     payload.schedule = this.createDeployment.settings.schedule || this.createDeployment.selectedIntegration.schedule
                 }
-                const response = await fetch('/api/v1/deployments', {
+                const response = await fetch(`/api/v1/tenants/${this.$store.currentUser.selectedTenant.id}/deployments`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload),
@@ -1816,6 +1838,7 @@ function page(){
 
         clearFilters() {
             this.filters.integrations = '';
+            this.filters.showServices = false;
             this.filters.deployments = '';
             this.filters.deploymentStatus = '';
             this.filters.deploymentQueue = '';
@@ -1852,6 +1875,10 @@ function page(){
 
         get filteredIntegrations() {
             let filtered = this.integrations;
+            // Hide service integrations unless the toggle is on
+            if (!this.filters.showServices) {
+                filtered = filtered.filter(i => !i.is_service);
+            }
             if (this.filters.integrations) {
                 const search = this.filters.integrations.toLowerCase();
                 filtered = filtered.filter(i =>
@@ -1957,7 +1984,7 @@ function page(){
             this.configError = null;
             try {
                 const config = JSON.parse(this.editedConfig);
-                const response = await fetch(`/api/v1/deployments/${this.selectedItem.id}`, {
+                const response = await fetch(`/api/v1/tenants/${this.$store.currentUser.selectedTenant.id}/deployments/${this.selectedItem.id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ config }),

@@ -2614,7 +2614,7 @@ class ProjectPolicy(db.Model):
         lazy="dynamic",
         backref=db.backref("project_policies", lazy="dynamic"),
     )
-    versions = db.relationship("PolicyVersion", backref="policy", lazy="dynamic")
+    versions = db.relationship("PolicyVersion", backref="policy", lazy="dynamic", cascade="all, delete-orphan")
     project_id = db.Column(db.String, db.ForeignKey("projects.id"), nullable=False)
     owner_id = db.Column(db.String(), db.ForeignKey("users.id"))
     reviewer_id = db.Column(db.String(), db.ForeignKey("users.id"))

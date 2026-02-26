@@ -51,7 +51,7 @@ def api_put(endpoint: str, payload: dict = None, params: dict = None):
         raise
     return response.json()
 
-def api_delete(endpoint: str, params: dict = None):
+def api_delete(endpoint: str, payload: dict = None, params: dict = None):
     base_url = current_app.config["INTEGRATIONS_BASE_URL"]
     url = f"{base_url.rstrip('/')}/{endpoint.lstrip('/')}"
 
@@ -59,7 +59,7 @@ def api_delete(endpoint: str, params: dict = None):
     headers = {
         "Authorization": token
     }
-    response = requests.delete(url, headers=headers, params=params, timeout=10)
+    response = requests.delete(url, headers=headers, json=payload, params=params, timeout=10)
     try:
         response.raise_for_status()
     except HTTPError as e:

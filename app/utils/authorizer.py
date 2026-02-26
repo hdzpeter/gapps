@@ -512,11 +512,11 @@ class Authorizer:
         return self.can_user_add_policy_to_project(policy, project)
 
     def can_user_add_control_to_project(self, control, project):
-        if not (control := self.id_to_obj("Control", control)):
+        if not (control := self.id_to_obj("ProjectControl", control)):
             return self.return_response(False, "control not found", 404)
         if not (project := self.id_to_obj("Project", project)):
             return self.return_response(False, "project not found", 404)
-        if self._can_user_edit_project(project) and control.tenant == project.tenant:
+        if self._can_user_edit_project(project) and control.project== project:
             return self.return_response(
                 True, AUTHORIZED_MSG, 200, control=control, project=project
             )

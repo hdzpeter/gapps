@@ -15,7 +15,6 @@ from sqlalchemy import func
 from app.email import send_email
 from app.utils.reports import Report
 from app.utils.authorizer import Authorizer
-import arrow
 
 @api.route("/tenants/<string:id>/frameworks", methods=["GET"])
 @login_required
